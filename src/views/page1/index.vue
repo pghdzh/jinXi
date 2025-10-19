@@ -4,38 +4,23 @@
 
     <!-- 背景轮播（两组用于桌面/移动不同裁切） -->
     <div class="carousel carousel1" aria-hidden="true">
-      <img
-        v-for="(src, idx) in randomFive"
-        :key="idx"
-        :src="src"
-        class="carousel-image"
-        :class="{ active: idx === currentIndex }"
-      />
+      <img v-for="(src, idx) in randomFive" :key="idx" :src="src" class="carousel-image"
+        :class="{ active: idx === currentIndex }" />
     </div>
     <div class="carousel carousel2" aria-hidden="true">
-      <img
-        v-for="(src, idx) in randomFive2"
-        :key="idx"
-        :src="src"
-        class="carousel-image"
-        :class="{ active: idx === currentIndex }"
-      />
+      <img v-for="(src, idx) in randomFive2" :key="idx" :src="src" class="carousel-image"
+        :class="{ active: idx === currentIndex }" />
     </div>
 
     <section class="center" role="main">
       <h1 class="title">今昔 · 今汐</h1>
 
       <div class="subtitle" aria-live="polite">
-        <span class="typed">{{ typed }}</span
-        ><span class="cursor" aria-hidden="true">▍</span>
+        <span class="typed">{{ typed }}</span><span class="cursor" aria-hidden="true">▍</span>
       </div>
     </section>
 
-    <footer
-      class="shore-footer-simple"
-      role="contentinfo"
-      aria-label="页面页脚"
-    >
+    <footer class="shore-footer-simple" role="contentinfo" aria-label="页面页脚">
       <div class="inner container">
         <div class="center">
           <div class="slogan">潮汐轻叩岁光，记下每一次温柔的归处。</div>
@@ -185,30 +170,31 @@ function tickCanvas(now: number) {
 
 // ========== 打字机文案 ==========
 // 适合长离风格的副标题（偏长句，已为打字器准备）
-const lines = [
-  "今汐以韶光为筹，把潮汐的节律折成可行的道路与温柔的诺言。",
-  "她在岁轮间低语，用叠层的光把迷惘裁成方向与答复。",
-  "以薄雾为帷，以珍珠为灯，她在夜色里为行人点一盏不炽的光。",
-  "今汐不急于宣判，她以潮位衡量时机，以韶光测量人心的重。",
-  "她把每一次决策看作仪式，既有算筹的锋利，也有海光的抚慰。",
-  "在棋盘与潮汐之间，她替后来者把复杂折为一列温柔的指引。",
-  "她的教导像潮线，来时平静，去时留下一圈可追寻的印记。",
-  "用韶光叠层，她将希望、代价与策略并列，摆成可读的年谱。",
-  "当众声喧嚣，她让潮汐的节拍替你筛选重与轻。",
-  "她以淡然为铠，用算筹为针，把混乱缝成清晰的脉络。",
-  "今汐的温柔不是懦弱，而是在冷静的规划里替你保留回头路。",
-  "每一句低语都像拾起的贝壳，里面有过往的答案与下一次的方向。",
-  "她把过往炼成韶光，把韶光裁作训言——每一句都有重量。",
-  "以潮声为律，她既引导亦守望，像岸边那座静默的灯塔。",
-  "在她的盘算里，失去与获得被细致地列出，最后只留下可承受的选择。",
-  "她把决策当作施法，落子即定局，余汐为证，静待光回响。",
-  "今汐不许轻易言退，她把怯懦化为练习，把练习化为可被依赖的稳定。",
-  "她的策略温而不燥，像晨雾里的一缕光，不刺眼却足以看清路。",
-  "把别人的犹豫当成棋子，她用沉稳的节拍帮人整理方向与信念。",
-  "在潮汐与韶光交汇处，她收集微小的可能，把它们织成能被践行的计划。",
-  "她的言辞里藏着年轮的秩序——不炽烈，但足以照亮迷途。",
-  "今汐是那种会在深夜为你推演未来，然后把结果放回你手心的存在。",
-];
+const lines = ["此身即为今州最坚固的屏障",
+  "许愿的倾听者，今州的守望者",
+  "以我之心，共鸣万物之愿",
+  "愿以微光，照见你的春天",
+  "万千愿望，皆是我前行的力量",
+  "岁主之责，便是为人间带来春天",
+  "在这里，每个愿望都会被温柔以待",
+  "从寒冬中走来，为你们守护春光",
+  "指尖轻触，为你连接万千心愿",
+  "今州的灯火，因你而长明不熄",
+  "雪落无声，愿语细闻",
+  "愿力所至，寒冰亦能化作春水",
+  "在每一个许愿的刹那，我都与你同在",
+  "从豆蔻年华到今州令尹，初心未改",
+  "神性之下，是爱着人间的温柔灵魂",
+  "以凡人之躯，行岁主之责",
+  "你的祈愿，是我最珍视的力量",
+  "在这纷扰世间，为你守护一方安宁",
+  "既是今州令尹，亦是众生倾听者",
+  "愿力汇聚，终成照亮今州的光芒",
+  "冰雪消融处，春芽正破土",
+  "在神性与人性之间，选择守护",
+  "每一盏天灯，都是我需要回应的期盼",
+  "以温柔为刃，护你所爱",
+  "从寒冬走来，更懂春的珍贵"]
 
 const typed = ref("");
 let lineIndex = 0;
@@ -347,11 +333,9 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
       position: absolute;
       inset: 0;
       /* 更冷更薄的遮罩，使图片更贴合今汐气质 */
-      background: linear-gradient(
-        180deg,
-        rgba(2, 12, 14, 0.22),
-        rgba(4, 18, 20, 0.4)
-      );
+      background: linear-gradient(180deg,
+          rgba(2, 12, 14, 0.22),
+          rgba(4, 18, 20, 0.4));
       pointer-events: none;
       z-index: 1;
       mix-blend-mode: soft-light;
@@ -394,7 +378,7 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
 
     .title {
       z-index: 9;
-      font-size: 2rem;
+      font-size: 4rem;
       margin: 0;
       font-weight: 800;
       line-height: 1;
@@ -411,9 +395,10 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
     }
 
     .subtitle {
-      font-size: 1.02rem;
+      font-size: 2.02rem;
       min-height: 1.6em;
-      color: rgba($muted-text, 0.94); /* 保持高可读但偏冷 */
+      color: rgba($muted-text, 0.94);
+      /* 保持高可读但偏冷 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -445,12 +430,11 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
 
   .shore-footer-simple {
     /* 背景与边线改为冷珍珠调 */
-    background: linear-gradient(
-      180deg,
-      rgba(4, 12, 12, 0.7),
-      rgba(6, 14, 14, 0.88)
-    );
-    border-top: 1px solid rgba(160, 225, 210, 0.04); /* 珍珠边线 */
+    background: linear-gradient(180deg,
+        rgba(4, 12, 12, 0.7),
+        rgba(6, 14, 14, 0.88));
+    border-top: 1px solid rgba(160, 225, 210, 0.04);
+    /* 珍珠边线 */
     color: $muted-text;
     font-size: 13px;
     position: relative;
@@ -496,9 +480,11 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
   0% {
     opacity: 1;
   }
+
   50% {
     opacity: 0;
   }
+
   100% {
     opacity: 1;
   }
@@ -510,6 +496,7 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
     .carousel1 {
       display: none;
     }
+
     .carousel2 {
       display: block;
     }
@@ -518,10 +505,11 @@ $soft-warm: rgba(255, 244, 210, 0.03); // 极轻微金边（可选，几乎不�
       padding: 18px 14px;
 
       .title {
-        font-size: 1.4rem;
+        font-size: 2.4rem;
       }
+
       .subtitle {
-        font-size: 0.98rem;
+        font-size: 1.5rem;
       }
     }
   }

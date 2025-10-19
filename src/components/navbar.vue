@@ -54,7 +54,7 @@ const navItems = [
   { name: "晷影典藏", path: "/gallery" }, // 图集 — 立绘、草稿与时光影像的收藏
   { name: "岁主典籍", path: "/resources" }, // 资料库 — 战术笔记、手稿与设定集
   { name: "流汐低语", path: "/voice" }, // 语音馆 — 今汐的低语、回响与短语录音
-  { name: "晷铭录", path: "/thanks" }, // 致谢/纪念 — 铭记与仪式感的结尾页
+  // { name: "晷铭录", path: "/thanks" }, // 致谢/纪念 — 铭记与仪式感的结尾页
 ];
 
 const mobileNavOpen = ref(false);

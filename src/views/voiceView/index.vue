@@ -1,9 +1,9 @@
 <template>
-    <section class="voice-gallery" aria-label="珂莱塔 · 语音馆">
-   
+    <section class="voice-gallery">
+
         <div class="bg-carousel" aria-hidden="true">
             <transition-group name="bg-fade" tag="div" class="bg-layer">
-           
+
                 <img v-for="(src, idx) in activeImages" :key="`bg-${idx}-${isMobile ? 'm' : 'd'}`" :src="src"
                     :class="['bg-img', { active: idx === currentIndex }]" alt="" />
 
@@ -12,14 +12,14 @@
         </div>
 
         <div class="vg__wrap">
-   
+
             <header class="vg__header">
                 <div class="logo">
                     <div class="shouan-icon" role="button" tabindex="0" aria-label="共鸣之晶">
-                    
+
                         <svg viewBox="0 0 48 48" width="36" height="36" aria-hidden="true" focusable="false">
 
-                          
+
                             <g class="ember-core" transform="translate(0,0)">
                                 <path
                                     d="M24 14 C26 18, 30 20, 28 26 C26 32, 22 34, 24 38 C20 34, 18 30, 20 26 C22 22, 24 20, 24 14 Z" />
@@ -36,37 +36,34 @@
 
                     </div>
                     <div class="title-group">
-                        <h1 class="title">长离 · 语音馆</h1>
-                        <p class="subtitle">局未终，人仍在。</p>
+                        <h1 class="title">今汐 · 语音馆</h1>
+                        <p class="subtitle">雪落无声，愿语细闻</p>
                     </div>
                 </div>
             </header>
 
             <!-- 列表（已解锁放前，未解锁放后） -->
             <ul class="vg__list" role="list">
-                <li v-for="id in allVoiceIds" :key="id" class="vg__item"
-                    :class="{ unlocked: isUnlocked(id), locked: !isUnlocked(id), playing: id === currentId }">
+                <li v-for="id in allVoiceIds" :key="id" class="vg__item isUnlocked"
+                    :class="{ playing: id === currentId }">
                     <div class="item__left">
                         <div class="index">{{ String(id).padStart(3, '0') }}</div>
                         <div class="info">
                             <div class="name">语音 {{ String(id).padStart(3, '0') }}</div>
-                            <div class="note" v-if="isUnlocked(id)">已解锁</div>
-                            <div class="note note--locked" v-else>未解锁</div>
                         </div>
                     </div>
 
                     <div class="item__right">
-                        <button class="btn btn--icon" :disabled="!isUnlocked(id)" @click="playEntry(id)"
-                            :title="isUnlocked(id) ? (currentId === id && isPlaying ? '暂停' : '播放') : '尚未解锁'">
-                            <span v-if="!isUnlocked(id)">🔒</span>
-                            <span v-else-if="currentId === id && isPlaying">❚❚</span>
+                        <button class="btn btn--icon" @click="playEntry(id)"
+                            :title="(currentId === id && isPlaying ? '暂停' : '播放')">
+                            <span v-if="currentId === id && isPlaying">❚❚</span>
                             <span v-else>▶</span>
                         </button>
 
-                        <a v-if="isUnlocked(id)" :href="voicePath(id)" :download="`audio_${id}.mp3`" title="下载">
+                        <a :href="voicePath(id)" :download="`audio_${id}.mp3`" title="下载">
                             <el-button type="primary" :icon="Download" circle />
                         </a>
-                        <span v-else class="btn btn--hint" aria-hidden="true">—</span>
+
                     </div>
                 </li>
             </ul>
@@ -82,7 +79,7 @@ import {
     Download
 } from '@element-plus/icons-vue'
 /* ================== 配置 ================== */
-const TOTAL_VOICES = 30; // 语音总数，按实际替换
+const TOTAL_VOICES = 17; // 语音总数，按实际替换
 const BG_INTERVAL_MS = 4500; // 背景切换间隔（毫秒）
 const MOBILE_BREAKPOINT = 720; // 小于这个宽度视为移动端
 /* ========================================= */
@@ -129,34 +126,11 @@ function handleResize() {
 const activeImages = computed(() => (isMobile.value ? randomFive2.value : randomFive.value));
 /* ========== 语音列表与播放逻辑 ========== */
 
-/* 已解锁集合（由 localStorage.triggeredVoices 提供，数组） */
-const unlockedSet = ref<Set<number>>(new Set<number>());
 
-function loadUnlocked() {
-    try {
-        const raw = localStorage.getItem('triggeredVoices') || '[]';
-        const arr = JSON.parse(raw);
-        const s = new Set<number>();
-        if (Array.isArray(arr)) {
-            arr.forEach((v: any) => {
-                const n = Number(v);
-                if (!Number.isNaN(n)) s.add(n);
-            });
-        }
-        unlockedSet.value = s;
-    } catch (e) {
-        console.warn('读取 triggeredVoices 失败', e);
-        unlockedSet.value = new Set<number>();
-    }
-}
 
 /* 生成所有 id，并保持已解锁在前、未解锁在后 */
 const allIds = Array.from({ length: TOTAL_VOICES }, (_, i) => i);
-const allVoiceIds = computed(() => {
-    const unlocked = Array.from(unlockedSet.value).filter(n => allIds.includes(n)).sort((a, b) => a - b);
-    const locked = allIds.filter(id => !unlockedSet.value.has(id));
-    return [...unlocked, ...locked];
-});
+const allVoiceIds = allIds
 
 /* audio 单例 */
 let currentAudio: HTMLAudioElement | null = null;
@@ -195,13 +169,9 @@ function onAudioError(e?: any) { console.error('audio error', e); isPlaying.valu
 function voicePath(id: number) {
     return `/voice/audio (${id}).mp3`;
 }
-function isUnlocked(id: number) {
-    return unlockedSet.value.has(id);
-}
+
 
 async function playEntry(id: number) {
-    if (!isUnlocked(id)) return;
-    // 同一条 -> 切换暂停/恢复
     if (currentId.value === id && isPlaying.value) {
         currentAudio?.pause();
         isPlaying.value = false;
@@ -240,15 +210,12 @@ function stopBgTimer() {
     }
 }
 
-/* 监听 storage 事件（跨 tab 更新） */
-function onStorage(e: StorageEvent) {
-    if (e.key === 'triggeredVoices') loadUnlocked();
-}
+
 
 /* 生命周期 */
 onMounted(() => {
-    loadUnlocked();
-    window.addEventListener('storage', onStorage);
+
+
     window.addEventListener('resize', handleResize);
 
     // 如果数组为空（没有图片），也避免报错：确保至少有一个占位空数组
@@ -260,7 +227,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener('storage', onStorage);
+
     window.removeEventListener('resize', handleResize);
     stopBgTimer();
     destroyAudio();
@@ -273,21 +240,22 @@ watch(activeImages, (nv) => {
 </script>
 
 <style lang="scss" scoped>
-/* 长离风格：暗匣底色 + 余焰点缀（颜色写死） */
+/* 今汐风格：深潮底色 + 珍珠薄雾点缀（颜色写死） */
 .voice-gallery {
     position: relative;
     min-height: 560px;
     font-family: "PingFang SC", "Noto Sans SC", system-ui, -apple-system, "Segoe UI",
         Roboto, "Helvetica Neue", Arial;
-    color: #f5e6d9;
-    /* 纸色文字 */
+    color: #EAF9F8;
+    /* 珍珠浅色文字 */
     overflow: hidden;
     padding: 28px;
     padding-top: 80px;
-    background: linear-gradient(180deg, #100603 0%, #140704 40%, #0b0503 100%);
+    /* 深海 -> 珍珠薄雾 */
+    background: linear-gradient(180deg, #041718 0%, #062b29 40%, #052522 100%);
     -webkit-font-smoothing: antialiased;
 
-    /* 背景轮播层（余焰暖影）*/
+    /* 背景轮播层（珍珠冷影）*/
     .bg-carousel {
         position: absolute;
         inset: 0;
@@ -311,19 +279,19 @@ watch(activeImages, (nv) => {
                 transform: scale(1.02);
                 transition: opacity 900ms ease, transform 900ms ease, filter 900ms ease;
                 pointer-events: none;
-                filter: brightness(0.72) contrast(0.92) saturate(0.9);
+                filter: brightness(0.72) contrast(0.94) saturate(0.88);
                 mix-blend-mode: screen;
             }
 
             .bg-img.active {
                 opacity: 1;
                 transform: scale(1);
-                filter: brightness(0.9) contrast(1) saturate(1.06) sepia(0.06);
+                filter: brightness(0.94) contrast(1) saturate(1.04);
             }
         }
     }
 
-    /* 前景容器（暗匣玻璃 + 余焰边） */
+    /* 前景容器（玻璃感 + 珍珠边） */
     .vg__wrap {
         position: relative;
         z-index: 2;
@@ -331,9 +299,9 @@ watch(activeImages, (nv) => {
         margin: 0 auto;
         border-radius: 14px;
         padding: 18px;
-        box-shadow: 0 12px 48px rgba(4, 6, 6, 0.72), inset 0 1px 0 rgba(255, 220, 190, 0.02);
-        background: linear-gradient(180deg, rgba(12, 6, 4, 0.6), rgba(8, 4, 3, 0.45));
-        border: 1px solid rgba(255, 140, 90, 0.04);
+        box-shadow: 0 12px 48px rgba(2, 10, 10, 0.72), inset 0 1px 0 rgba(127, 231, 214, 0.02);
+        background: linear-gradient(180deg, rgba(4, 14, 12, 0.58), rgba(6, 16, 14, 0.44));
+        border: 1px solid rgba(127, 231, 214, 0.03);
         backdrop-filter: blur(6px) saturate(1.02);
     }
 
@@ -349,7 +317,7 @@ watch(activeImages, (nv) => {
             gap: 12px;
             align-items: center;
 
-            /* 右侧：焰棋徽（替代晶格） */
+            /* 右侧：今汐风徽章（替代晶格） */
             .shouan-icon {
                 display: inline-grid;
                 place-items: center;
@@ -361,9 +329,9 @@ watch(activeImages, (nv) => {
                 position: relative;
                 z-index: 4;
 
-                background: linear-gradient(180deg, rgba(10, 6, 4, 0.92), rgba(12, 8, 6, 0.94));
-                border: 1px solid rgba(255, 120, 70, 0.06);
-                box-shadow: 0 8px 30px rgba(6, 4, 4, 0.64), inset 0 1px 0 rgba(255, 160, 110, 0.02);
+                background: linear-gradient(180deg, rgba(6, 14, 12, 0.92), rgba(8, 18, 16, 0.94));
+                border: 1px solid rgba(127, 231, 214, 0.03);
+                box-shadow: 0 8px 30px rgba(2, 8, 8, 0.48), inset 0 1px 0 rgba(127, 231, 214, 0.02);
                 transition: transform 260ms cubic-bezier(.2, .9, .3, 1), box-shadow 260ms, background 260ms;
                 -webkit-tap-highlight-color: transparent;
                 will-change: transform, box-shadow, opacity;
@@ -375,17 +343,17 @@ watch(activeImages, (nv) => {
                     overflow: visible;
                 }
 
-
-
                 .ember-core path {
-                    fill: #ff9a66;
-                    opacity: 0.14;
+                    fill: #DFFDF9;
+                    /* 珍珠青核心 */
+                    opacity: 0.12;
                     transition: fill 260ms, opacity 260ms, transform 260ms, filter 260ms;
-                    filter: drop-shadow(0 8px 20px rgba(255, 120, 70, 0.06));
+                    filter: drop-shadow(0 8px 20px rgba(127, 231, 214, 0.04));
                 }
 
                 .ember-sparks circle {
-                    fill: rgba(255, 200, 150, 0.95);
+                    fill: #7FE7D6;
+                    /* 薄雾海绿星尘 */
                     opacity: 0;
                     transition: opacity 240ms, transform 360ms;
                 }
@@ -393,16 +361,14 @@ watch(activeImages, (nv) => {
                 &:hover,
                 &:focus {
                     transform: translateY(-6px) scale(1.04);
-                    box-shadow: 0 28px 86px rgba(8, 4, 4, 0.72), inset 0 1px 0 rgba(255, 160, 110, 0.02);
-                    background: linear-gradient(180deg, rgba(14, 8, 6, 0.96), rgba(16, 10, 8, 0.98));
-
-
+                    box-shadow: 0 28px 86px rgba(4, 12, 12, 0.58), inset 0 1px 0 rgba(127, 231, 214, 0.02);
+                    background: linear-gradient(180deg, rgba(8, 18, 16, 0.98), rgba(6, 14, 12, 0.99));
 
                     .ember-core path {
                         opacity: 1;
                         transform: scale(1.03);
-                        fill: #ff9a66;
-                        filter: drop-shadow(0 18px 46px rgba(255, 120, 70, 0.12));
+                        fill: #DFFDF9;
+                        filter: drop-shadow(0 18px 46px rgba(127, 231, 214, 0.08));
                     }
 
                     .ember-sparks circle {
@@ -426,12 +392,8 @@ watch(activeImages, (nv) => {
                     }
                 }
 
-
-
-                /* 动画：浮动 / 框体摆动 / 核心呼吸 / 火星上浮 */
+                /* 动画：浮动 / 核心呼吸 / 星尘上浮 */
                 animation: emberFloat 8s ease-in-out infinite;
-
-
 
                 .ember-core path {
                     animation: emberCoreBreathe 4.6s ease-in-out infinite;
@@ -472,25 +434,23 @@ watch(activeImages, (nv) => {
                 }
             }
 
-
-
             @keyframes emberCoreBreathe {
                 0% {
                     transform: scale(1);
                     opacity: 0.9;
-                    filter: drop-shadow(0 6px 18px rgba(255, 120, 70, 0.06));
+                    filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
                 }
 
                 50% {
                     transform: scale(1.04);
                     opacity: 1;
-                    filter: drop-shadow(0 18px 46px rgba(255, 140, 80, 0.12));
+                    filter: drop-shadow(0 18px 46px rgba(127, 231, 214, 0.08));
                 }
 
                 100% {
                     transform: scale(1);
                     opacity: 0.9;
-                    filter: drop-shadow(0 6px 18px rgba(255, 120, 70, 0.06));
+                    filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
                 }
             }
 
@@ -520,8 +480,6 @@ watch(activeImages, (nv) => {
                 }
             }
 
-
-
             .title-group {
                 display: flex;
                 flex-direction: column;
@@ -530,19 +488,19 @@ watch(activeImages, (nv) => {
                     margin: 0;
                     font-size: 1.5rem;
                     font-weight: 800;
-                    /* 暖金渐变文字 */
-                    background: linear-gradient(90deg, #ffd9b8 0%, #ffb37a 50%, #ff8a4a 100%);
+                    /* 珍珠渐变文字 */
+                    background: linear-gradient(90deg, #DFFDF9 0%, #BFF8EE 50%, #7FE7D6 100%);
                     -webkit-background-clip: text;
                     background-clip: text;
                     color: transparent;
                     -webkit-text-fill-color: transparent;
-                    text-shadow: 0 6px 20px rgba(10, 6, 6, 0.6);
+                    text-shadow: 0 6px 20px rgba(2, 12, 10, 0.5);
                     letter-spacing: 0.4px;
                 }
 
                 .subtitle {
                     margin: 4px 0 0;
-                    color: rgba(245, 230, 214, 0.85);
+                    color: rgba(234, 249, 248, 0.86);
                     font-size: 1rem;
                     line-height: 1.3;
                 }
@@ -567,7 +525,7 @@ watch(activeImages, (nv) => {
         }
 
         &::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, rgba(255, 140, 90, 0.12), rgba(180, 90, 50, 0.12));
+            background: linear-gradient(180deg, rgba(127, 231, 214, 0.12), rgba(191, 248, 238, 0.10));
             border-radius: 8px;
             border: 2px solid transparent;
             background-clip: padding-box;
@@ -578,7 +536,7 @@ watch(activeImages, (nv) => {
         }
     }
 
-    /* 每一项卡片（暗匣 + 余焰边） */
+    /* 每一项卡片（玻璃 + 珍珠边） */
     .vg__item {
         display: flex;
         align-items: center;
@@ -586,15 +544,15 @@ watch(activeImages, (nv) => {
         gap: 12px;
         padding: 14px 16px;
         border-radius: 14px;
-        background: linear-gradient(90deg, rgba(18, 12, 10, 0.72), rgba(12, 8, 6, 0.78));
-        border: 1px solid rgba(180, 110, 60, 0.06);
+        background: linear-gradient(90deg, rgba(6, 14, 12, 0.72), rgba(8, 18, 16, 0.78));
+        border: 1px solid rgba(95, 200, 180, 0.04);
         backdrop-filter: blur(4px);
         transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease, opacity 0.18s ease;
 
         &.playing {
             transform: translateY(-4px);
-            box-shadow: 0 0 42px rgba(255, 120, 70, 0.14), inset 0 2px 12px rgba(255, 140, 90, 0.03);
-            border-color: rgba(255, 140, 90, 0.18);
+            box-shadow: 0 0 42px rgba(127, 231, 214, 0.12), inset 0 2px 12px rgba(127, 231, 214, 0.03);
+            border-color: rgba(127, 231, 214, 0.12);
         }
 
         &.locked {
@@ -602,7 +560,7 @@ watch(activeImages, (nv) => {
             filter: grayscale(20%) brightness(0.82);
 
             .note--locked {
-                color: #6a7376;
+                color: #7a868b;
                 font-style: italic;
             }
         }
@@ -618,22 +576,23 @@ watch(activeImages, (nv) => {
                 border-radius: 12px;
                 display: grid;
                 place-items: center;
-                background: linear-gradient(180deg, #ffdab3 0%, #ffb37a 60%);
-                color: #1a0b06;
+                /* 珍珠编号 */
+                background: linear-gradient(180deg, #DFFDF9 0%, #BFF8EE 60%);
+                color: #042826;
                 font-weight: 800;
-                box-shadow: 0 6px 20px rgba(8, 6, 6, 0.36);
-                text-shadow: 0 0 6px rgba(0, 0, 0, 0.18);
+                box-shadow: 0 6px 20px rgba(2, 10, 10, 0.18);
+                text-shadow: 0 0 6px rgba(0, 0, 0, 0.06);
             }
 
             .info {
                 .name {
-                    color: #ffecd9;
+                    color: #EAF9F8;
                     font-weight: 700;
                     letter-spacing: 0.3px;
                 }
 
                 .note {
-                    color: #b9bfc3;
+                    color: rgba(200, 230, 225, 0.9);
                     font-size: 0.9rem;
                     margin-top: 4px;
                 }
@@ -657,16 +616,16 @@ watch(activeImages, (nv) => {
                     border: none;
                     display: inline-grid;
                     place-items: center;
-                    background: linear-gradient(180deg, #ffcf9f, #ff9f5a);
-                    color: #1a0804;
+                    background: linear-gradient(180deg, #BFF8EE, #7FE7D6);
+                    color: #042826;
                     font-weight: 700;
                     cursor: pointer;
-                    box-shadow: 0 6px 26px rgba(255, 120, 70, 0.12);
+                    box-shadow: 0 6px 26px rgba(34, 92, 86, 0.08);
                     transition: all 0.15s ease;
 
                     &:hover {
-                        background: linear-gradient(180deg, #ffd8b4, #ffac6b);
-                        box-shadow: 0 8px 40px rgba(255, 120, 70, 0.18);
+                        background: linear-gradient(180deg, #DFFDF9, #9FEFE0);
+                        box-shadow: 0 8px 40px rgba(127, 231, 214, 0.10);
                         transform: translateY(-3px);
                     }
                 }
@@ -678,20 +637,20 @@ watch(activeImages, (nv) => {
 
             a {
                 .el-button {
-                    background: linear-gradient(180deg, #ffcf9f, #ff9f5a);
+                    background: linear-gradient(180deg, #BFF8EE, #7FE7D6);
                     border: none;
-                    color: #1a0804;
+                    color: #042826;
                     transition: all 0.15s ease;
 
                     &:hover {
-                        background: linear-gradient(180deg, #ffd8b4, #ffb07a);
+                        background: linear-gradient(180deg, #DFFDF9, #BFF8EE);
                     }
                 }
             }
         }
     }
 
-    /* 过渡效果组（背景淡入淡出）*/
+    /* 背景淡入淡出过渡 */
     .bg-fade-enter-active,
     .bg-fade-leave-active {
         transition: opacity 900ms ease, transform 900ms ease;

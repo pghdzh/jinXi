@@ -58,7 +58,7 @@
         <h3>批量上传图片</h3>
         <div class="tip-container">
           <ul class="tips-list">
-            <li>审核规则： 1.不要色情倾向（不要露三点，我怕被封） 2.要我能认出是长离。</li>
+            <li>审核规则： 1.不要色情倾向（不要露三点，我怕被封） 2.要我能认出是今汐。</li>
             <li>
               由于没有用户系统，我这边不好做审核反馈，但只要显示上传成功，我这边肯定能收到。
             </li>
@@ -175,7 +175,7 @@ const page = 1;
 const pageSize = 99;
 
 const fetchRanking = async () => {
-  const res = await getRankingList({ page, pageSize, character_key: "changLi" });
+  const res = await getRankingList({ page, pageSize, character_key: "jinXi" });
   if (res.success) {
     rankingList.value = res.data;
   } else {
@@ -222,7 +222,7 @@ async function loadNextPage() {
       page: pageImage.value,
       limit: limit.value,
       sortBy: sortBy.value,
-      character_key: "changLi",
+      character_key: "jinXi",
       order: order.value,
     });
     imgTotal.value = res.total;
@@ -384,7 +384,7 @@ async function submitUpload() {
     const res = await uploadImages(
       selectedFiles.value,
       nickname.value.trim(),
-      "changLi"
+      "jinXi"
     );
     const uploadedCount = res.data.length;
     // 更新 localStorage
@@ -596,33 +596,31 @@ $text: #fde8e8;
         padding: 10px 28px 10px 56px;
         font-size: 1rem;
         line-height: 1;
-        font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
+        font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial,
+          sans-serif;
         cursor: pointer;
         border-radius: 28px;
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(255, 120, 70, 0.06);
+        border: 1px solid rgba(127, 231, 214, 0.03);
 
-        /* 暗匣底 + 轻微暖光纹理（写死颜色） */
+        /* 今汐：暗匣底 + 珍珠薄雾纹理（写死色值） */
         background: linear-gradient(90deg,
-            rgba(18, 10, 8, 0.82) 0%,
-            rgba(12, 8, 6, 0.92) 50%,
-            rgba(10, 6, 4, 0.96) 100%);
-        color: #ffb890;
-        /* 暖金文本 */
+            rgba(6, 18, 16, 0.82) 0%,
+            rgba(8, 22, 20, 0.92) 50%,
+            rgba(6, 16, 14, 0.96) 100%);
+        color: #DFFDF9;
+        /* 珍珠青文本 */
         box-shadow:
-          0 10px 28px rgba(8, 4, 2, 0.56),
-          /* 深色投影 */
-          inset 0 1px 0 rgba(255, 160, 110, 0.02);
-        /* 内部微光 */
-
+          0 10px 28px rgba(3, 10, 10, 0.56),
+          inset 0 1px 0 rgba(127, 231, 214, 0.01);
         transition: transform 200ms cubic-bezier(0.2, 0.9, 0.25, 1),
           box-shadow 200ms ease, background 260ms ease,
           color 160ms ease, filter 200ms ease;
         -webkit-tap-highlight-color: transparent;
         will-change: transform, box-shadow, filter;
 
-        /* 左侧徽记 —— 焰羽棋徽（改为暖色）*/
+        /* 左侧徽记 —— 今汐版：小珍珠/波纹徽记（冷色）*/
         &::after {
           content: "";
           position: absolute;
@@ -632,19 +630,19 @@ $text: #fde8e8;
           width: 18px;
           height: 22px;
           border-radius: 4px;
-          /* 由暖金到铜金的微渐变，形似小徽记/棋纹 */
+          /* 珍珠到薄雾海绿的微渐变，作为小徽记 */
           background: linear-gradient(180deg,
-              rgba(255, 217, 184, 0.98),
-              rgba(255, 154, 102, 0.94));
-          box-shadow: 0 6px 18px rgba(255, 120, 70, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.5);
-          /* 稍微修改裁切形状，像火羽 / 纹章 */
+              #DFFDF9 0%,
+              #7FE7D6 70%);
+          box-shadow: 0 6px 18px rgba(34, 92, 86, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+          /* 保留类似纹章形状 */
           clip-path: polygon(50% 0, 78% 25%, 100% 45%, 50% 100%, 0% 45%, 22% 25%);
           pointer-events: none;
           z-index: 3;
           transition: transform 220ms ease, opacity 220ms ease, box-shadow 220ms ease;
         }
 
-        /* 轻微的内侧余焰环（可见但不抢眼） */
+        /* 左侧微光环（今汐微珍珠光） */
         &::before {
           content: "";
           position: absolute;
@@ -654,52 +652,52 @@ $text: #fde8e8;
           width: 44px;
           height: 44px;
           border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, rgba(255, 180, 120, 0.06), transparent 45%);
+          background: radial-gradient(circle at 35% 35%, rgba(127, 231, 214, 0.06), transparent 45%);
           filter: blur(6px);
           pointer-events: none;
           opacity: 0.9;
           z-index: 1;
         }
 
-        /* hover：暗底微变，余焰徽记放大且发亮 */
+        /* hover：暗底微变，徽记放大且发出珍珠微光 */
         &:hover {
           transform: translateY(-5px) scale(1.02);
           box-shadow:
-            0 22px 66px rgba(8, 4, 2, 0.66),
-            0 0 44px rgba(255, 120, 70, 0.10);
-          filter: saturate(1.06) brightness(1.02);
-          color: #ff8a4a;
+            0 22px 66px rgba(3, 10, 10, 0.66),
+            0 0 44px rgba(127, 231, 214, 0.10);
+          filter: saturate(1.04) brightness(1.02);
+          color: #7FE7D6;
+          /* hover 文本偏薄雾海绿 */
           background: linear-gradient(90deg,
-              rgba(18, 10, 8, 0.88) 0%,
-              rgba(12, 8, 6, 0.94) 50%,
-              rgba(10, 6, 4, 0.98) 100%);
+              rgba(6, 18, 16, 0.88) 0%,
+              rgba(8, 22, 20, 0.94) 50%,
+              rgba(6, 16, 14, 0.98) 100%);
         }
 
         &:hover::after {
           transform: translateY(-56%) rotate(-6deg) scale(1.12);
-          box-shadow: 0 10px 30px rgba(255, 140, 80, 0.18), inset 0 2px 6px rgba(255, 255, 255, 0.2);
+          box-shadow: 0 10px 30px rgba(127, 231, 214, 0.14), inset 0 2px 6px rgba(255, 255, 255, 0.06);
           opacity: 1;
         }
 
-        /* active（按下）反馈 */
+        /* active（按下）反馈：更内敛 */
         &:active {
           transform: translateY(-2px) scale(0.995);
           box-shadow:
-            0 10px 28px rgba(8, 4, 2, 0.5),
-            0 0 20px rgba(255, 120, 70, 0.06);
+            0 10px 28px rgba(3, 10, 10, 0.5),
+            0 0 20px rgba(127, 231, 214, 0.06);
         }
 
         /* keyboard focus 可见环（无障碍） */
         &:focus-visible {
           outline: none;
           box-shadow:
-            0 22px 66px rgba(8, 4, 2, 0.66),
-            0 0 0 6px rgba(255, 140, 80, 0.06);
+            0 22px 66px rgba(3, 10, 10, 0.66),
+            0 0 0 6px rgba(127, 231, 214, 0.06);
         }
-
       }
-
     }
+
 
     .gallery-grid {
       display: grid;
@@ -862,7 +860,6 @@ $text: #fde8e8;
     img {
       max-width: 85%;
       max-height: 85%;
-      border: 3px solid $accent;
       border-radius: 8px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
       animation: fadeInUp 0.4s ease;
@@ -877,12 +874,11 @@ $text: #fde8e8;
       cursor: pointer;
       user-select: none;
       padding: 8px;
-      background: rgba(27, 27, 27, 0.8);
       border-radius: 50%;
       transition: background 0.3s;
 
       &:hover {
-        background: $accent;
+        color: #4ed6c6;
       }
     }
 
@@ -919,21 +915,21 @@ $text: #fde8e8;
     cursor: pointer;
     user-select: none;
 
-    color: #022b33;
+    color: #043832;
     background: linear-gradient(90deg,
-        rgba(255, 217, 184, 0.98) 0%,
-        rgba(255, 154, 102, 0.98) 52%,
-        rgba(255, 107, 53, 1) 100%);
+        rgba(127, 231, 214, 0.98) 0%,
+        rgba(223, 253, 249, 0.98) 60%);
     border-radius: 28px;
 
     backdrop-filter: blur(6px) saturate(120%);
     -webkit-backdrop-filter: blur(6px) saturate(120%);
 
-    /* 卡片质感：深色阴影 + 冰蓝光晕 */
-    box-shadow: 0 14px 40px rgba(2, 20, 28, 0.55),
-      /* 深海投影 */
-      0 0 28px rgba(80, 200, 240, 0.08);
-    /* 冰蓝光晕 */
+
+    box-shadow:
+      0 14px 36px rgba(4, 12, 10, 0.44),
+      0 0 28px rgba(127, 231, 214, 0.08);
+    ;
+
 
     overflow: visible;
     transition: transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1),
@@ -942,12 +938,14 @@ $text: #fde8e8;
     /* hover：微抬起、光晕增强 */
     &:hover {
       transform: translateY(-6px) scale(1.02);
-      box-shadow: 0 28px 80px rgba(2, 24, 34, 0.62),
-        0 0 46px rgba(80, 200, 240, 0.16);
-      filter: brightness(1.02) saturate(1.05);
+      box-shadow:
+        0 26px 68px rgba(4, 12, 10, 0.52),
+        0 0 56px rgba(127, 231, 214, 0.12);
+      filter: brightness(1.02) saturate(1.03);
     }
   }
 
+  /* 遮罩层：深海薄雾 + 珍珠微光（颜色写死） */
   .upload-modal-overlay {
     position: fixed;
     inset: 0;
@@ -956,16 +954,16 @@ $text: #fde8e8;
     align-items: center;
     justify-content: center;
 
-    /* 暗匣遮罩 + 微暖余焰渐变（写死颜色）*/
+    /* 今汐风遮罩：深海绿 -> 深潮色 */
     background: linear-gradient(180deg,
-        rgba(8, 5, 3, 0.86),
-        rgba(6, 4, 3, 0.78));
+        rgba(4, 23, 22, 0.86),
+        rgba(5, 20, 20, 0.78));
 
     /* 轻微模糊以保留底下内容感知 */
     backdrop-filter: blur(10px) saturate(1.05);
     -webkit-backdrop-filter: blur(10px) saturate(1.05);
 
-    /* 顶层微弱余焰光斑（不抢眼）*/
+    /* 顶层珍珠光斑（低饱和、不抢眼）*/
     &::after {
       content: "";
       position: absolute;
@@ -973,14 +971,14 @@ $text: #fde8e8;
       pointer-events: none;
       background:
         radial-gradient(700px 260px at 50% 28%,
-          rgba(255, 140, 80, 0.05),
+          rgba(127, 231, 214, 0.06),
           transparent 14%),
         linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 40%);
       mix-blend-mode: screen;
     }
   }
 
-  /* 模态主体：暗匣 + 内侧余光 */
+  /* 模态主体：今汐风的暗匣 + 珍珠边缘 */
   .upload-modal {
     position: relative;
     width: 720px;
@@ -989,21 +987,21 @@ $text: #fde8e8;
     border-radius: 16px;
     overflow: hidden;
     z-index: 2100;
-    color: #f5e8dc;
-    /* 暖米文字 */
+    color: #EAF9F8;
+    /* 珍珠浅色文字 */
     font-family: "Helvetica Neue", "Noto Sans SC", "PingFang SC", sans-serif;
     -webkit-font-smoothing: antialiased;
 
-    /* 背景：更偏暖的暗匣质感 */
+    /* 背景：深海玻璃感（写死色值） */
     background: linear-gradient(180deg,
-        rgba(18, 10, 8, 0.94),
-        rgba(12, 8, 6, 0.92));
-    border: 1px solid rgba(255, 120, 70, 0.06);
+        rgba(6, 20, 18, 0.94),
+        rgba(8, 18, 16, 0.92));
+    border: 1px solid rgba(127, 231, 214, 0.03);
     backdrop-filter: blur(6px) saturate(1.02);
     -webkit-backdrop-filter: blur(6px) saturate(1.02);
-    box-shadow: 0 30px 90px rgba(6, 4, 2, 0.78), inset 0 1px 0 rgba(255, 160, 110, 0.02);
+    box-shadow: 0 30px 90px rgba(3, 8, 8, 0.78), inset 0 1px 0 rgba(127, 231, 214, 0.02);
 
-    /* 暖光边缘（伪元素） */
+    /* 珍珠微光边缘（伪元素） */
     &::before {
       content: "";
       position: absolute;
@@ -1011,10 +1009,10 @@ $text: #fde8e8;
       border-radius: 18px;
       pointer-events: none;
       background: linear-gradient(90deg,
-          rgba(255, 160, 110, 0.06),
-          rgba(255, 120, 70, 0.04),
-          rgba(255, 160, 110, 0.04));
-      filter: blur(14px);
+          rgba(127, 231, 214, 0.04),
+          rgba(223, 253, 249, 0.02),
+          rgba(127, 231, 214, 0.03));
+      filter: blur(12px);
       mix-blend-mode: screen;
       opacity: 0.95;
     }
@@ -1022,36 +1020,37 @@ $text: #fde8e8;
     h3 {
       margin: 0 0 16px 0;
       font-size: 1.5rem;
-      color: #ffb890;
-      /* 暖金标题 */
+      color: #DFFDF9;
+      /* 珍珠青标题 */
       font-weight: 900;
       text-align: center;
       letter-spacing: 0.6px;
-      text-shadow: 0 6px 22px rgba(40, 16, 12, 0.28);
+      text-shadow: 0 6px 20px rgba(6, 48, 44, 0.06);
     }
 
     .stats {
       margin: 18px 0;
       font-size: 1rem;
       text-align: center;
-      color: rgba(245, 232, 220, 0.94);
+      color: rgba(234, 249, 248, 0.94);
 
       strong {
-        color: #ff9a66;
+        color: #7FE7D6;
+        /* 薄雾海绿强调 */
       }
     }
 
-    /* tip 区块：匣中深色 + 左侧余焰强调线 */
+    /* tip 区块：匣中深色 + 左侧珍珠强调线 */
     .tip-container {
       margin-top: 18px;
       padding: 14px 18px;
       background: linear-gradient(180deg,
-          rgba(14, 8, 6, 0.60),
-          rgba(10, 6, 4, 0.56));
-      border-left: 4px solid rgba(255, 140, 90, 0.12);
+          rgba(8, 18, 16, 0.60),
+          rgba(6, 14, 12, 0.56));
+      border-left: 4px solid rgba(127, 231, 214, 0.12);
       border-radius: 10px;
       backdrop-filter: blur(4px);
-      color: rgba(245, 232, 220, 0.94);
+      color: rgba(234, 249, 248, 0.94);
 
       .tips-list {
         list-style: none;
@@ -1063,7 +1062,7 @@ $text: #fde8e8;
           padding-left: 34px;
           margin-bottom: 10px;
           font-size: 0.95rem;
-          color: rgba(240, 225, 210, 0.94);
+          color: rgba(230, 249, 246, 0.94);
 
           &::before {
             content: "";
@@ -1073,13 +1072,13 @@ $text: #fde8e8;
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            /* 由冰蓝改为余焰小徽记（暖色） */
+            /* 珍珠小徽记（今汐色写死） */
             background: radial-gradient(circle at 30% 30%,
-                #ffd9b8 0%,
-                rgba(255, 160, 110, 0.88) 20%,
-                #ff9a66 60%,
-                #ff6b35 100%);
-            box-shadow: 0 6px 18px rgba(255, 120, 70, 0.06);
+                #DFFDF9 0%,
+                rgba(127, 231, 214, 0.88) 20%,
+                #7FE7D6 60%,
+                #4ed6c6 100%);
+            box-shadow: 0 6px 18px rgba(34, 92, 86, 0.06);
           }
 
           &:last-child {
@@ -1093,15 +1092,15 @@ $text: #fde8e8;
       margin-top: 10px;
       text-align: right;
       font-size: 0.9rem;
-      color: rgba(230, 210, 190, 0.86);
+      color: rgba(230, 249, 246, 0.86);
     }
 
-    /* 表单控件：深色输入框 + 余焰高光（聚焦时暖光） */
+    /* 表单控件：深色输入框 + 聚焦时珍珠高光 */
     label {
       display: block;
       margin-bottom: 18px;
       font-size: 0.95rem;
-      color: rgba(240, 225, 210, 0.96);
+      color: rgba(230, 249, 246, 0.96);
 
       input[type="text"],
       input[type="file"],
@@ -1110,11 +1109,11 @@ $text: #fde8e8;
         margin-top: 8px;
         padding: 12px 14px;
         border-radius: 10px;
-        border: 1px solid rgba(255, 120, 70, 0.06);
+        border: 1px solid rgba(127, 231, 214, 0.03);
         background: linear-gradient(180deg,
-            rgba(12, 8, 6, 0.6),
-            rgba(10, 6, 4, 0.64));
-        color: rgba(245, 232, 220, 0.96);
+            rgba(10, 16, 14, 0.6),
+            rgba(8, 14, 12, 0.64));
+        color: rgba(234, 249, 248, 0.96);
         font-size: 0.95rem;
         outline: none;
         transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
@@ -1123,19 +1122,19 @@ $text: #fde8e8;
 
       input[type="text"]::placeholder,
       textarea::placeholder {
-        color: rgba(230, 210, 190, 0.56);
+        color: rgba(218, 241, 238, 0.56);
       }
 
       input[type="text"]:focus,
       input[type="file"]:focus,
       textarea:focus {
-        border-color: rgba(255, 140, 90, 0.36);
-        box-shadow: 0 12px 36px rgba(255, 120, 70, 0.06), 0 2px 8px rgba(255, 160, 110, 0.04);
+        border-color: rgba(127, 231, 214, 0.36);
+        box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06), 0 2px 8px rgba(127, 231, 214, 0.04);
         transform: translateY(-1px);
       }
     }
 
-    /* 按钮行：主按钮为余焰渐变，取消为透明暖边 */
+    /* 按钮行：主按钮改为珍珠渐变，取消为透明珍珠边 */
     .modal-actions {
       display: flex;
       justify-content: flex-end;
@@ -1153,49 +1152,48 @@ $text: #fde8e8;
         font-size: 0.95rem;
         transition: background 0.22s ease, box-shadow 0.22s ease, transform 0.12s ease;
         min-width: 96px;
-        color: #2b1208;
+        color: #023232;
+        /* 深色文字保证对比 */
       }
 
-      /* 主按钮：余焰渐变 */
+      /* 主按钮：珍珠渐变（今汐） */
       button:not(.cancel) {
         background: linear-gradient(135deg,
-            #ffd9b8 0%,
-            #ffb890 45%,
-            #ff8a4a 100%);
-        box-shadow: 0 12px 36px rgba(255, 120, 70, 0.12), 0 4px 18px rgba(160, 90, 40, 0.04);
-        color: #2b1208;
+            #DFFDF9 0%,
+            #BFF8EA 45%,
+            #7FE7D6 100%);
+        box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06), 0 4px 18px rgba(64, 160, 140, 0.04);
+        color: #023232;
       }
 
       button:not(.cancel):hover:not(:disabled) {
         transform: translateY(-4px);
-        box-shadow: 0 22px 66px rgba(8, 4, 2, 0.32), 0 8px 28px rgba(255, 120, 70, 0.08);
+        box-shadow: 0 22px 66px rgba(5, 18, 16, 0.32), 0 8px 28px rgba(127, 231, 214, 0.08);
       }
 
       button:not(.cancel):disabled {
-        background: linear-gradient(135deg,
-            rgba(60, 40, 36, 0.48),
-            rgba(50, 40, 36, 0.44));
+        background: linear-gradient(135deg, rgba(8, 14, 12, 0.48), rgba(6, 12, 10, 0.44));
         opacity: 0.6;
         cursor: not-allowed;
         box-shadow: none;
-        color: rgba(200, 180, 160, 0.6);
+        color: rgba(180, 220, 215, 0.6);
       }
 
-      /* 取消按钮：半透明暖边风格 */
+      /* 取消按钮：透明珍珠边风格 */
       button.cancel {
         background: transparent;
-        border: 2px solid rgba(255, 120, 70, 0.06);
-        color: rgba(240, 220, 200, 0.9);
+        border: 2px solid rgba(127, 231, 214, 0.06);
+        color: rgba(230, 245, 243, 0.9);
         min-width: 86px;
         box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.22);
       }
 
       button.cancel:hover {
-        background: rgba(255, 140, 90, 0.03);
+        background: rgba(127, 231, 214, 0.02);
       }
     }
-
   }
+
 
   .ranking-panel {
     width: 220px;
@@ -1204,18 +1202,19 @@ $text: #fde8e8;
     top: 84px;
     right: 12px;
     z-index: 1200;
-    color: #f5e8dc;
+    color: #EAF9F8;
+    /* 珍珠浅色文字 */
     font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
 
-    /* 暗匣底与微暖内光（写死颜色） */
+    /* 今汐：深海玻璃 -> 深潮色 */
     background: linear-gradient(180deg,
-        rgba(12, 8, 6, 0.94),
-        rgba(10, 6, 4, 0.92));
+        rgba(4, 23, 22, 0.94),
+        rgba(6, 28, 26, 0.92));
     border-radius: 18px;
-    border: 1px solid rgba(255, 120, 70, 0.06);
+    border: 1px solid rgba(127, 231, 214, 0.03);
     -webkit-backdrop-filter: blur(8px) saturate(1.02);
     backdrop-filter: blur(8px) saturate(1.02);
-    box-shadow: 0 18px 56px rgba(6, 4, 2, 0.84), inset 0 1px 0 rgba(255, 160, 110, 0.02);
+    box-shadow: 0 18px 56px rgba(3, 8, 8, 0.72), inset 0 1px 0 rgba(127, 231, 214, 0.02);
 
     &.collapsed {
       height: auto;
@@ -1235,29 +1234,30 @@ $text: #fde8e8;
         margin: 0;
         font-size: 1.05rem;
         font-weight: 900;
-        color: #ffb890;
-        /* 暖金 */
+        color: #DFFDF9;
+        /* 珍珠青标题 */
         font-family: "Zhi Mang Xing", "STKaiti", serif;
         letter-spacing: 0.6px;
-        text-shadow: 0 6px 18px rgba(40, 16, 12, 0.28);
+        text-shadow: 0 6px 18px rgba(6, 48, 44, 0.06);
       }
 
       .toggle-icon {
         font-size: 1rem;
-        color: #ffb57a;
-        background: linear-gradient(180deg, rgba(30, 18, 12, 0.48), rgba(24, 14, 10, 0.36));
+        color: #7FE7D6;
+        /* 薄雾海绿图标色 */
+        background: linear-gradient(180deg, rgba(8, 20, 18, 0.48), rgba(6, 16, 14, 0.36));
         padding: 6px 8px;
         border-radius: 9px;
-        border: 1px solid rgba(255, 120, 70, 0.06);
-        box-shadow: 0 6px 14px rgba(6, 4, 4, 0.5), inset 0 1px 0 rgba(255, 160, 110, 0.02);
+        border: 1px solid rgba(127, 231, 214, 0.02);
+        box-shadow: 0 6px 14px rgba(3, 10, 10, 0.44), inset 0 1px 0 rgba(127, 231, 214, 0.01);
         transition: transform 220ms, box-shadow 220ms;
       }
 
-      /* header hover / focus 更明显的余焰微光 */
+      /* header hover / focus 更明显的珍珠微光 */
       &:hover .toggle-icon,
       &:focus-within .toggle-icon {
         transform: translateY(-2px);
-        box-shadow: 0 12px 30px rgba(255, 120, 70, 0.08), inset 0 1px 0 rgba(255, 160, 110, 0.02);
+        box-shadow: 0 12px 30px rgba(127, 231, 214, 0.06), inset 0 1px 0 rgba(127, 231, 214, 0.02);
       }
     }
 
@@ -1275,9 +1275,9 @@ $text: #fde8e8;
       }
 
       &::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, rgba(255, 140, 80, 0.14), rgba(255, 100, 40, 0.10));
+        background: linear-gradient(180deg, rgba(127, 231, 214, 0.18), rgba(223, 253, 249, 0.10));
         border-radius: 8px;
-        border: 1px solid rgba(255, 160, 110, 0.02);
+        border: 1px solid rgba(127, 231, 214, 0.02);
       }
 
       &::-webkit-scrollbar-track {
@@ -1294,23 +1294,22 @@ $text: #fde8e8;
       border-radius: 12px;
       cursor: default;
 
-      /* 暗匣小卡片，微暖边线 */
-      background: linear-gradient(180deg, rgba(14, 10, 8, 0.56), rgba(12, 8, 6, 0.54));
+      /* 今汐风：暗匣小卡片，薄雾边线 */
+      background: linear-gradient(180deg, rgba(8, 24, 22, 0.56), rgba(6, 20, 18, 0.54));
 
       transition: transform 260ms cubic-bezier(.2, .9, .3, 1), box-shadow 260ms, background 260ms, color 200ms;
       position: relative;
 
       &:hover {
         transform: translateY(-6px);
-        box-shadow: 0 18px 48px rgba(8, 4, 2, 0.72), 0 0 28px rgba(255, 120, 70, 0.04);
-        background: linear-gradient(90deg, rgba(18, 10, 8, 0.66), rgba(14, 8, 6, 0.62));
+        box-shadow: 0 18px 48px rgba(4, 12, 10, 0.56), 0 0 28px rgba(127, 231, 214, 0.04);
+        background: linear-gradient(90deg, rgba(10, 26, 24, 0.66), rgba(8, 22, 20, 0.62));
       }
 
-      /* 可键盘 focus 的高亮态（便于可访问性） */
       &:focus-within,
       &:focus {
         outline: none;
-        box-shadow: 0 18px 48px rgba(255, 120, 70, 0.06), 0 0 0 4px rgba(255, 120, 70, 0.04);
+        box-shadow: 0 18px 48px rgba(127, 231, 214, 0.06), 0 0 0 4px rgba(127, 231, 214, 0.03);
         transform: translateY(-4px);
       }
 
@@ -1319,9 +1318,9 @@ $text: #fde8e8;
         text-align: center;
         font-weight: 900;
         font-size: 1rem;
-        color: #ffd9b8;
-        /* 余焰色 */
-        text-shadow: 0 2px 8px rgba(40, 16, 12, 0.24);
+        color: #DFFDF9;
+        /* 珍珠数字 */
+        text-shadow: 0 2px 8px rgba(6, 48, 44, 0.06);
         flex-shrink: 0;
       }
 
@@ -1329,7 +1328,7 @@ $text: #fde8e8;
         flex: 1;
         padding: 0 8px;
         font-size: 0.95rem;
-        color: #ffd9b8;
+        color: #DFFDF9;
         font-weight: 700;
         white-space: normal;
         word-break: break-word;
@@ -1338,70 +1337,68 @@ $text: #fde8e8;
 
       .count {
         font-size: 0.9rem;
-        color: #ffb890;
+        color: #7FE7D6;
+        /* 薄雾海绿小计数 */
         font-weight: 800;
         min-width: 36px;
         text-align: right;
-        text-shadow: 0 2px 6px rgba(40, 16, 12, 0.16);
+        text-shadow: 0 2px 6px rgba(6, 48, 44, 0.04);
         flex-shrink: 0;
       }
 
-      /* ---------- 前三名强化（余焰 / 铜金 / 仪式感） ---------- */
+      /* ---------- 前三名强化（今汐版：珍珠 / 冷金 / 石青） ---------- */
       &.rank-1 {
-        background: linear-gradient(135deg, #ffd9b8 0%, #ffb890 45%, #ff9a66 100%);
-        color: #2b1208;
-
-        box-shadow: 0 18px 56px rgba(255, 140, 70, 0.14), 0 0 30px rgba(255, 160, 110, 0.06);
+        background: linear-gradient(135deg, #DFFDF9 0%, #BFF8EE 50%, #7FE7D6 100%);
+        color: #042826;
+        box-shadow: 0 18px 56px rgba(127, 231, 214, 0.12), 0 0 30px rgba(127, 231, 214, 0.06);
 
         .rank {
-          color: #2b1208;
-          text-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+          color: #042826;
+          text-shadow: 0 4px 14px rgba(2, 10, 10, 0.16);
         }
 
         .name {
-          color: #2b1208;
+          color: #042826;
         }
 
         .count {
-          color: #2b1208;
+          color: #042826;
         }
       }
 
       &.rank-2 {
-        background: linear-gradient(135deg, #ffdec6 0%, #ffb890 55%, #d98a5a 100%);
-        color: #2b1208;
-
-        box-shadow: 0 14px 48px rgba(200, 110, 60, 0.12);
+        background: linear-gradient(135deg, #CFF8EE 0%, #9FEFE1 55%, #6ED6BC 100%);
+        color: #042826;
+        box-shadow: 0 14px 48px rgba(64, 190, 170, 0.08);
 
         .rank {
-          color: #2b1208;
+          color: #042826;
         }
 
         .name {
-          color: #2b1208;
+          color: #042826;
         }
 
         .count {
-          color: #2b1208;
+          color: #042826;
         }
       }
 
       &.rank-3 {
-        background: linear-gradient(135deg, rgba(255, 200, 160, 0.12) 0%, rgba(255, 160, 110, 0.16) 60%, rgba(200, 110, 60, 0.22) 100%);
-        color: #ffd9b8;
-
-        box-shadow: 0 10px 36px rgba(160, 90, 40, 0.12);
+        background: linear-gradient(135deg, rgba(175, 240, 225, 0.12) 0%, rgba(140, 230, 210, 0.16) 60%, rgba(96, 200, 180, 0.20) 100%);
+        color: #DFFDF9;
+        box-shadow: 0 10px 36px rgba(70, 160, 140, 0.08);
 
         .rank {
-          color: #ffcf9f;
+          color: #CFF6F0;
         }
 
         .name {
-          color: #ffd9b8;
+          color: #DFFDF9;
         }
 
         .count {
-          color: #ffcf9f;
+          color: #CFF6F0;
         }
       }
     }
@@ -1416,9 +1413,8 @@ $text: #fde8e8;
     .fade-leave-to {
       opacity: 0;
     }
-
-
   }
+
 
 }
 </style>
