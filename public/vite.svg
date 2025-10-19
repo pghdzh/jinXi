@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 48 48"
+     width="36" height="36"
+     aria-hidden="true" focusable="false" role="img" aria-label="焰棋徽图标">
+  <title>焰棋徽</title>
+
+  <defs>
+    <!-- 余焰渐变 -->
+    <linearGradient id="g-flame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd9b8"/>
+      <stop offset="0.45" stop-color="#ff9a66"/>
+      <stop offset="1" stop-color="#ff6b35"/>
+    </linearGradient>
+
+    <!-- 中心轻微光晕 -->
+    <filter id="coreGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- 火星（小圆点）光晕 -->
+    <filter id="sparkGlow" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.2" result="sblur"/>
+      <feMerge>
+        <feMergeNode in="sblur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 中心：抽象火焰 / 棋子意象 -->
+  <g class="ember-core" transform="translate(0,0)">
+    <path
+      d="M24 14 C26 18, 30 20, 28 26 C26 32, 22 34, 24 38 C20 34, 18 30, 20 26 C22 22, 24 20, 24 14 Z"
+      fill="url(#g-flame)"
+      stroke="rgba(43,18,8,0.14)"
+      stroke-width="0.6"
+      filter="url(#coreGlow)" />
+  </g>
+
+  <!-- 飞烬 / 星屑（火星）-->
+  <g class="ember-sparks" aria-hidden="true">
+    <circle cx="6" cy="10" r="0.95" fill="#ffd9b8" opacity="0.95" filter="url(#sparkGlow)"/>
+    <circle cx="42" cy="14" r="0.9"  fill="#ffd9b8" opacity="0.88" filter="url(#sparkGlow)"/>
+    <circle cx="38" cy="36" r="0.78" fill="#ffd9b8" opacity="0.82" filter="url(#sparkGlow)"/>
+    <circle cx="10" cy="34" r="0.75" fill="#ffd9b8" opacity="0.78" filter="url(#sparkGlow)"/>
+  </g>
+</svg>
