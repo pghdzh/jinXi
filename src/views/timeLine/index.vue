@@ -21,7 +21,7 @@
         <div class="right-col" ref="metaCard">
           <div class="hero-panel">
             <h1 class="name">今汐 <span class="jp">（今州令尹）</span></h1>
-            <p class="subtitle">焰落不息，誓言仍燃于心。</p>
+            <p class="subtitle">身承岁主之责，心系凡尘之愿。</p>
             <p class="lead">
               万丈天光被她化作点点辉芒，温柔地照亮人们的愿望。
               命运向她指明神灵的方向，但她脚下的道路，仍然通向人类的未来。
