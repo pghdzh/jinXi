@@ -7,7 +7,7 @@
           <button class="avatar-card">
             <picture class="avatar-wrap">
               <img
-                src="@/assets/images1/1 (1).png"
+                src="@/assets/images1/2 (4).webp"
                 class="avatar"
                 loading="lazy"
                 decoding="async"
