@@ -346,7 +346,7 @@ function formatTime(iso: string) {
 
 <style scoped lang="scss">
 .yuzuki-resources {
-  
+
   color: #EAF9F8;
   display: flex;
   flex-direction: column;
@@ -375,15 +375,8 @@ function formatTime(iso: string) {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0;
       filter: blur(0.6px) saturate(0.9);
-      transform: scale(1.03);
-      transition: opacity 1s ease, transform 10s linear;
-
-      &.active {
-        opacity: 1;
-        transform: scale(1);
-      }
+ 
     }
   }
 
