@@ -1,40 +1,82 @@
 <template>
-  <div class="yuzuki-resources">
+  <div class="jinxi-resources">
+
+
+    <!-- 背景轮播 -->
     <div class="carousel carousel1" aria-hidden="true">
-      <img v-for="(src, idx) in randomFive" :key="idx" :src="src" class="carousel-image"
-        :class="{ active: idx === currentIndex }" />
+      <img
+        v-for="(src, idx) in randomFive"
+        :key="idx"
+        :src="src"
+        class="carousel-image"
+        :class="{ active: idx === currentIndex }"
+      />
     </div>
     <div class="carousel carousel2" aria-hidden="true">
-      <img v-for="(src, idx) in randomFive2" :key="idx" :src="src" class="carousel-image"
-        :class="{ active: idx === currentIndex }" />
+      <img
+        v-for="(src, idx) in randomFive2"
+        :key="idx"
+        :src="src"
+        class="carousel-image"
+        :class="{ active: idx === currentIndex }"
+      />
     </div>
+
     <header class="hero">
       <div class="hero-inner">
-        <h1>资源分享</h1>
-        <p class="subtitle">可自由上传关于今汐的相关链接</p>
+        <h1>今汐 · 资源分享</h1>
+        <p class="subtitle">
+          潮声寄愿，岁光藏珍 —— 可自由上传关于今汐的相关链接
+        </p>
       </div>
     </header>
 
     <main class="container">
       <section class="uploader" :class="{ collapsed: uploaderCollapsed }">
         <div class="uploader-head">
-          <button class="toggle" @click="toggleUploader" :aria-expanded="!uploaderCollapsed">
+          <button
+            class="toggle"
+            @click="toggleUploader"
+            :aria-expanded="!uploaderCollapsed"
+          >
             <span v-if="uploaderCollapsed">展开上传区</span>
             <span v-else>收起上传区</span>
           </button>
         </div>
 
-        <form @submit.prevent="addResource" class="upload-form" :aria-hidden="uploaderCollapsed">
+        <form
+          @submit.prevent="addResource"
+          class="upload-form"
+          :aria-hidden="uploaderCollapsed"
+        >
           <div class="row">
-            <input v-model="form.title" type="text" placeholder="标题（必填，如果有解压码之类的也写这里吧）" aria-label="标题" />
-            <input v-model="form.type" type="text" placeholder="链接类型(网页链接、b站视频、网盘链接等等)" aria-label="来源" />
+            <input
+              v-model="form.title"
+              type="text"
+              placeholder="标题（必填，若有解压码等请一并注明）"
+              aria-label="标题"
+            />
+            <input
+              v-model="form.type"
+              type="text"
+              placeholder="链接类型（网页/网盘/B站等）"
+              aria-label="类型"
+            />
           </div>
-
           <div class="row">
-            <input v-model="form.uploader" type="text" placeholder="上传人（可选）" aria-label="上传人" />
-            <input v-model="form.link" type="url" placeholder="链接(只输入网址不能有中文)" aria-label="链接" />
+            <input
+              v-model="form.uploader"
+              type="text"
+              placeholder="上传人（可选）"
+              aria-label="上传人"
+            />
+            <input
+              v-model="form.link"
+              type="url"
+              placeholder="链接（须以 https:// 开头）"
+              aria-label="链接"
+            />
           </div>
-
           <div class="actions">
             <button type="submit" class="btn primary">上传</button>
           </div>
@@ -43,7 +85,9 @@
 
       <section class="list">
         <div class="list-header">
-          <h2>资源列表（{{ resources.length }}）</h2>
+          <h2>
+            资源列表 <span class="count">（{{ resources.length }}）</span>
+          </h2>
           <div class="sort">
             <label>
               排序：
@@ -57,44 +101,59 @@
 
         <ul class="items">
           <li v-for="item in sortedResources" :key="item.id" class="item">
-            <a :href="item.link" target="_blank" rel="noopener noreferrer" class="title">{{ item.title }}</a>
-
+            <a
+              :href="item.link"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="title"
+              >{{ item.title }}</a
+            >
             <div class="meta">
               <div class="left">
                 <span class="uploader">{{ item.uploader || "匿名" }}</span>
                 <span class="dot">•</span>
                 <time :datetime="item.time">{{ formatTime(item.time) }}</time>
               </div>
-
               <div class="right">
-                <button @click.prevent="handleLike(item)" :aria-pressed="likedIds.has(String(item.id))" class="like-btn"
-                  :class="{ active: likedIds.has(String(item.id)) }">
-                  <img :src="likedIds.has(String(item.id))
-                    ? '/icons/heart-red-filled.svg'
-                    : '/icons/heart-red-outline.svg'
-                    " class="heart-icon" alt="heart" />
+                <button
+                  @click.prevent="handleLike(item)"
+                  :aria-pressed="likedIds.has(String(item.id))"
+                  class="like-btn"
+                  :class="{ active: likedIds.has(String(item.id)) }"
+                >
+                  <svg
+                    class="heart-icon"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35Z"
+                      :fill="
+                        likedIds.has(String(item.id))
+                          ? '#ff6b6b'
+                          : 'rgba(215, 255, 246, 0.5)'
+                      "
+                    />
+                  </svg>
                   <span class="count">{{ item.likes }}</span>
                 </button>
-
                 <span class="badge">{{ item.type }}</span>
               </div>
             </div>
           </li>
         </ul>
-
         <p v-if="resources.length === 0" class="empty">
-          目前没有资源，快来上传第一条吧！
+          ✨ 暂无资源，来上传第一条吧 ✨
         </p>
       </section>
     </main>
 
-    <footer class="foot">提示：点击标题将直接跳转</footer>
+    <footer class="foot">提示：点击标题直接跳转，愿这份珍藏如潮汐般长明</footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
-// 如果你的工程使用 ts 路径别名 @ 指向 src，可以用 '@/api/resource'，否则根据实际路径调整
 import {
   getResourceList,
   createResource,
@@ -106,7 +165,7 @@ interface Resource {
   id: number | string;
   title: string;
   uploader?: string;
-  time: string; // ISO 或 created_at
+  time: string;
   likes: number;
   link: string;
   type: string;
@@ -116,12 +175,7 @@ interface Resource {
 const STORAGE_KEY = "jinXi_resources_v1";
 const DEFAULT_ROLE = "jinXi";
 
-const form = ref<{
-  title: string;
-  uploader: string;
-  link: string;
-  type: string;
-}>({
+const form = ref({
   title: "",
   uploader: "",
   link: "",
@@ -148,15 +202,13 @@ function mapServerToLocal(row: any): Resource {
 
 async function loadResources() {
   try {
-    // 尝试从后端拉取（分页可扩展，这里一次拉足够 demo）
     const res: any = await getResourceList({
       role_key: DEFAULT_ROLE,
       page: 1,
-      pageSize: 100,
+      pageSize: 999,
     });
     if (res && res.success && Array.isArray(res.data)) {
       resources.value = res.data.map(mapServerToLocal);
-      // 可恢复本地点赞状态（仅 UI 记忆）
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         try {
@@ -164,16 +216,13 @@ async function loadResources() {
           if (parsed.liked && Array.isArray(parsed.liked)) {
             parsed.liked.forEach((id: string) => likedIds.value.add(id));
           }
-        } catch (e) {
-          /* ignore */
-        }
+        } catch (e) {}
       }
       return;
     }
   } catch (err) {
-    console.warn("拉取资源失败，使用本地缓存", err);
+    console.warn("拉取资源失败", err);
   }
-  // 回退：本地缓存（仅恢复点赞状态）
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -182,33 +231,27 @@ async function loadResources() {
         parsed.liked.forEach((id: string) => likedIds.value.add(id));
       }
     }
-  } catch (e) {
-    console.warn("本地加载失败", e);
-  }
+  } catch (e) {}
 }
 
 function saveLocalCache() {
   try {
     const liked = Array.from(likedIds.value);
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ liked }));
-  } catch (e) {
-    console.warn("保存本地缓存失败", e);
-  }
+  } catch (e) {}
 }
 
-// ========== 背景图片导入与轮播 ==========
+// 背景轮播逻辑（不变）
 const modules = import.meta.glob("@/assets/images1/*.{jpg,png,jpeg,webp}", {
   eager: true,
 });
 const allSrcs: string[] = Object.values(modules).map((mod: any) => mod.default);
-
 const modules2 = import.meta.glob("@/assets/images2/*.{jpg,png,jpeg,webp}", {
   eager: true,
 });
 const allSrcs2: string[] = Object.values(modules2).map(
   (mod: any) => mod.default
 );
-
 function shuffle<T>(arr: T[]): T[] {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -219,9 +262,9 @@ function shuffle<T>(arr: T[]): T[] {
 }
 const randomFive = ref<string[]>(shuffle(allSrcs).slice(0, 5));
 const randomFive2 = ref<string[]>(shuffle(allSrcs2).slice(0, 5));
-
 const currentIndex = ref(0);
 let Imgtimer: number | undefined;
+
 
 onMounted(() => {
   loadResources();
@@ -231,23 +274,23 @@ onMounted(() => {
   }, 5200);
   uploaderCollapsed.value = window.innerWidth <= 640;
 });
-function toggleUploader() {
-  uploaderCollapsed.value = !uploaderCollapsed.value;
-}
 onBeforeUnmount(() => {
   if (Imgtimer) clearInterval(Imgtimer);
 });
 
+function toggleUploader() {
+  uploaderCollapsed.value = !uploaderCollapsed.value;
+}
+
 async function addResource() {
   const t = form.value.title.trim();
   const l = form.value.link.trim();
-  if (!form.value.title.trim() || !form.value.link.trim()) {
+  if (!t || !l) {
     return ElMessage.warning("请填写完整信息");
   }
   if (!/^https?:\/\//i.test(l)) {
-    return ElMessage.error("请输入正确的链接(https开头)");
+    return ElMessage.error("请输入正确的链接（https开头）");
   }
-  // 尝试调用后端接口
   try {
     const payload = {
       title: t,
@@ -260,7 +303,6 @@ async function addResource() {
     if (res && res.success && res.data) {
       const added = mapServerToLocal(res.data);
       resources.value.unshift(added);
-      // 自动展开到顶部展示（可选）
       saveLocalCache();
       resetForm();
       ElMessage.success("上传成功");
@@ -269,6 +311,7 @@ async function addResource() {
     ElMessage.error("上传失败");
   } catch (err) {
     console.warn("创建资源失败", err);
+    ElMessage.error("上传失败，请稍后再试");
   }
 }
 
@@ -280,7 +323,6 @@ function resetForm() {
 }
 
 async function handleLike(item: Resource) {
-  // UI 乐观更新
   const id = item.id;
   const wasLiked = likedIds.value.has(String(id));
   if (wasLiked) {
@@ -291,8 +333,6 @@ async function handleLike(item: Resource) {
     item.likes++;
   }
   saveLocalCache();
-
-  // 同步后端（不依赖返回值进行 UI 回滚，简单处理：若失败则回退）
   try {
     const action = wasLiked ? "unlike" : "like";
     const res: any = await likeResource(id, action);
@@ -305,10 +345,8 @@ async function handleLike(item: Resource) {
       item.likes = res.data.likes;
     }
   } catch (err) {
-    console.warn("点赞接口调用失败，回滚本地状态", err);
-    // 回滚
+    console.warn("点赞接口调用失败，回滚", err);
     if (wasLiked) {
-      // 本来是已赞，取消失败 -> 重新添加
       likedIds.value.add(String(id));
       item.likes++;
     } else {
@@ -332,12 +370,12 @@ const sortedResources = computed(() => {
 function formatTime(iso: string) {
   try {
     const d = new Date(iso);
-    return new Intl.DateTimeFormat("zh-CN", {
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(d);
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const hh = String(d.getHours()).padStart(2, "0");
+    const mm = String(d.getMinutes()).padStart(2, "0");
+    return `${y}-${m}-${day} ${hh}:${mm}`;
   } catch (e) {
     return iso;
   }
@@ -345,17 +383,68 @@ function formatTime(iso: string) {
 </script>
 
 <style scoped lang="scss">
-.yuzuki-resources {
+// 今汐主题色
+$accent: #7fe7d6; // 薄雾海绿
+$accent-2: #d7fff6; // 珍珠青
+$gold: #e6c77c; // 龙尾金
+$white: #f0f6fa; // 月白
+$dark: #021016; // 玄黑底
+$card-bg: rgba(8, 22, 26, 0.55);
+$glass-border: rgba(127, 231, 214, 0.25);
+$text-light: #f5fffd;
+$text-muted: rgba(245, 255, 253, 0.7);
 
-  color: #EAF9F8;
-  display: flex;
-  flex-direction: column;
-  padding-top: 60px;
-  font-family: "Noto Sans SC", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
+@keyframes floatGlow {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate(40px, 30px) scale(1.2);
+    opacity: 0.3;
+  }
+}
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0;
+  }
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
+.jinxi-resources {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(145deg, $dark 0%, #06242a 100%);
+  color: $text-light;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "PingFang SC", sans-serif;
+  padding-bottom: 80px; // 为固定页脚留空间
+  overflow-x: hidden;
+  padding-top: 80px;
+
+  // 背景轮播
   .carousel {
-    position: absolute;
+    position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
@@ -364,372 +453,344 @@ function formatTime(iso: string) {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(2, 8, 14, 0.12), rgba(4, 18, 18, 0.22));
+      background: linear-gradient(
+        180deg,
+        rgba(2, 12, 14, 0.12),
+        rgba(2, 12, 14, 0.28)
+      );
       pointer-events: none;
       z-index: 1;
-      mix-blend-mode: soft-light;
+      mix-blend-mode: multiply;
     }
-
     .carousel-image {
       position: absolute;
       width: 100%;
       height: 100%;
       object-fit: cover;
-      filter: blur(0.6px) saturate(0.9);
- 
+      opacity: 0;
+      filter: blur(0.8px) saturate(0.98) contrast(0.96);
+      transition: opacity 560ms ease,
+        transform 760ms cubic-bezier(0.2, 0.9, 0.2, 1);
+      &.active {
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   }
-
   .carousel2 {
     display: none;
   }
 
-  /* 顶区 hero（今汐：深海玻璃 + 珍珠标题） */
+  // 头部
   .hero {
-    padding: 18px 12px;
-    background: linear-gradient(180deg, rgba(6, 22, 20, 0.48), rgba(8, 20, 18, 0.40));
-    -webkit-backdrop-filter: blur(4px) saturate(1.05);
-    backdrop-filter: blur(4px) saturate(1.05);
-    border-bottom: 1px solid rgba(127, 231, 214, 0.03);
-
+    position: relative;
+    z-index: 2;
+    padding: 24px 20px;
+    background: $card-bg;
+    backdrop-filter: blur(1px);
+    border-bottom: 1px solid $glass-border;
     .hero-inner {
       max-width: 1000px;
       margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-
+      text-align: center;
       h1 {
         margin: 0;
-        font-size: 20px;
-        display: inline-block;
-        width: auto;
-        font-weight: 900;
-        letter-spacing: 0.6px;
-        color: #7FE7D6;
-        /* 薄雾海绿 */
-        text-shadow: 0 6px 22px rgba(5, 40, 36, 0.06);
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, $white, $accent-2, $accent);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
-
       .subtitle {
-        margin-top: 6px;
-        color: rgba(234, 249, 248, 0.9);
-        font-size: 13px;
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: $text-muted;
       }
     }
   }
 
+  // 主容器
   .container {
+    position: relative;
+    z-index: 2;
     max-width: 1000px;
-    margin: 16px auto;
-    padding: 0 12px;
-    width: 100%;
-    box-sizing: border-box;
-    z-index: 99;
+    margin: 24px auto 0;
+    padding: 0 20px;
 
-    /* 上传区（玻璃质感 + 珍珠高光） */
+    // 上传区
     .uploader {
-      border-radius: 14px;
-      padding: 0;
-      box-shadow: 0 18px 56px rgba(0, 12, 14, 0.62);
-      border: 1px solid rgba(127, 231, 214, 0.02);
-      background: linear-gradient(180deg, rgba(6, 18, 16, 0.26), rgba(4, 14, 12, 0.20));
-
+      background: $card-bg;
+      backdrop-filter: blur(1px);
+      border-radius: 28px;
+      border: 1px solid $glass-border;
+      overflow: hidden;
+      transition: all 0.2s;
       .uploader-head {
         display: flex;
         justify-content: flex-end;
-        padding: 10px 12px;
-
+        padding: 12px 20px;
+        background: rgba(0, 0, 0, 0.2);
         .toggle {
-          background: transparent;
-          border: 1px solid rgba(127, 231, 214, 0.04);
-          color: #BFF8EE;
-          padding: 6px 10px;
-          border-radius: 8px;
+          background: rgba($accent, 0.1);
+          border: 1px solid $glass-border;
+          color: $accent-2;
+          padding: 6px 14px;
+          border-radius: 40px;
           cursor: pointer;
-          font-weight: 700;
-          transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
-          box-shadow: inset 0 -2px 6px rgba(0, 0, 0, 0.32);
+          transition: all 0.2s;
+          &:hover {
+            background: rgba($accent, 0.2);
+            transform: translateY(-2px);
+          }
         }
       }
-
       .upload-form {
-        padding: 14px;
-        max-height: 1600px;
-        overflow: hidden;
-        transition: max-height 280ms ease, padding 280ms ease;
-
+        padding: 20px;
+        transition: all 0.3s;
         .row {
           display: flex;
-          gap: 8px;
-          margin-bottom: 10px;
-
-          input,
-          select {
-            flex: 1 1 0;
-            padding: 10px 12px;
-            border-radius: 10px;
-            border: 1px solid rgba(127, 231, 214, 0.03);
-            font-size: 14px;
-            background: linear-gradient(180deg, rgba(8, 20, 18, 0.22), rgba(6, 16, 14, 0.14));
-            color: #DFFDF9;
-            font-weight: 700;
+          gap: 16px;
+          margin-bottom: 16px;
+          input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid $glass-border;
+            border-radius: 40px;
+            padding: 12px 18px;
+            color: $text-light;
+            font-size: 0.9rem;
             outline: none;
-            transition: box-shadow 0.16s, border-color 0.16s, transform 0.08s;
-            box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.42);
-          }
-
-          select {
-            max-width: 140px;
-          }
-
-          input::placeholder,
-          textarea::placeholder,
-          select::placeholder {
-            color: rgba(218, 241, 238, 0.5);
-          }
-
-          input:focus,
-          select:focus {
-            border-color: rgba(127, 231, 214, 0.36);
-            box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06);
-            transform: translateY(-1px);
+            transition: all 0.2s;
+            &:focus {
+              border-color: $accent;
+              box-shadow: 0 0 12px rgba($accent, 0.2);
+            }
           }
         }
-
         .actions {
           display: flex;
-          gap: 8px;
-          align-items: center;
-
+          justify-content: flex-end;
           .btn {
-            padding: 8px 12px;
-            border-radius: 10px;
+            padding: 10px 28px;
+            border-radius: 40px;
             border: none;
-            font-weight: 700;
+            font-weight: 600;
             cursor: pointer;
-
+            transition: all 0.2s;
             &.primary {
-              background: linear-gradient(135deg, #DFFDF9 0%, #BFF8EE 55%, #7FE7D6 100%);
-              color: #042826;
-              /* 深色文本保证对比 */
-              box-shadow: 0 12px 36px rgba(50, 170, 150, 0.08);
-              transition: transform 0.12s ease, box-shadow 0.14s ease;
-            }
-
-            &.primary:active {
-              transform: translateY(1px) scale(0.998);
-              box-shadow: 0 6px 16px rgba(10, 60, 56, 0.06);
-            }
-
-            &.secondary {
-              background: transparent;
-              color: rgba(200, 245, 240, 0.9);
-              border: 1px solid rgba(127, 231, 214, 0.04);
+              background: linear-gradient(90deg, $accent, $accent-2);
+              color: $dark;
+              &:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 20px rgba($accent, 0.3);
+              }
             }
           }
         }
       }
-
-      &.collapsed {
-        .upload-form {
-          max-height: 0;
-          padding-top: 0;
-          padding-bottom: 0;
-        }
+      &.collapsed .upload-form {
+        padding-top: 0;
+        padding-bottom: 0;
+        max-height: 0;
+        overflow: hidden;
       }
     }
 
-    /* 资源列表区（卡片：冰蓝晶体质感） */
+    // 资源列表
     .list {
-      margin-top: 18px;
-
+      margin-top: 28px;
       .list-header {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 10px;
-
+        align-items: baseline;
+        margin-bottom: 20px;
         h2 {
-          font-size: 16px;
+          font-size: 1.3rem;
           margin: 0;
-          color: #7FE7D6;
-          /* 标题薄雾海绿 */
-          font-weight: 800;
+          .count {
+            font-size: 0.9rem;
+            color: $text-muted;
+          }
         }
-
-        .sort select {
-          padding: 8px;
-          border-radius: 8px;
-          border: 1px solid rgba(127, 231, 214, 0.04);
-          background: linear-gradient(180deg, rgba(6, 30, 30, 0.58), rgba(4, 20, 20, 0.56));
-          color: #BFF8EE;
+        .sort {
+          label {
+            font-size: 0.85rem;
+            select {
+              background: rgba(0, 0, 0, 0.3);
+              border: 1px solid $glass-border;
+              border-radius: 40px;
+              padding: 6px 12px;
+              color: $text-light;
+              margin-left: 8px;
+              outline: none;
+            }
+          }
         }
       }
-
       .items {
         list-style: none;
         padding: 0;
         margin: 0;
-        max-height: 60vh;
-        overflow: auto;
-      }
-
-      .items .item {
-        border-radius: 12px;
-        padding: 12px;
-        margin-bottom: 12px;
-        background: linear-gradient(180deg, rgba(8, 18, 16, 0.22), rgba(6, 14, 12, 0.32));
-        border: 1px solid rgba(60, 180, 170, 0.03);
-        transition: transform 0.18s cubic-bezier(0.2, 0.9, 0.25, 1),
-          box-shadow 0.18s ease, background 0.18s ease;
-
-        &:hover {
-          background: linear-gradient(180deg, rgba(8, 18, 16, 0.72), rgba(6, 14, 12, 0.62));
-          transform: translateY(-6px);
+        max-height: calc(100vh - 380px); // 适应不同屏幕
+        overflow-y: auto;
+        scrollbar-width: thin;
+        &::-webkit-scrollbar {
+          width: 5px;
         }
-
-        .title {
-          display: block;
-          color: #EAF9F8;
-          font-weight: 800;
-          text-decoration: none;
-          margin-bottom: 8px;
-          font-size: 15px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        &::-webkit-scrollbar-track {
+          background: rgba($accent, 0.1);
+          border-radius: 10px;
         }
-
-        .meta {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 13px;
-
-          .left {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-
-            .uploader {
-              color: #BFF8EE;
-              font-weight: 700;
-            }
-
-            .dot {
-              opacity: 0.6;
-            }
-
-            time {
-              color: rgba(234, 249, 248, 0.95);
+        &::-webkit-scrollbar-thumb {
+          background: $accent;
+          border-radius: 10px;
+        }
+        .item {
+          background: rgba(0, 0, 0, 0.4);
+          border-radius: 20px;
+          padding: 16px 20px;
+          margin-bottom: 12px;
+          transition: all 0.2s;
+          border: 1px solid rgba($accent, 0.1);
+          &:hover {
+            transform: translateX(-6px);
+            border-color: rgba($accent, 0.4);
+            background: rgba($accent, 0.05);
+          }
+          .title {
+            display: block;
+            font-size: 1rem;
+            font-weight: 600;
+            color: $accent-2;
+            text-decoration: none;
+            margin-bottom: 8px;
+            word-break: break-word;
+            &:hover {
+              text-decoration: underline;
             }
           }
-
-          .right {
+          .meta {
             display: flex;
+            justify-content: space-between;
             align-items: center;
+            font-size: 0.75rem;
+            color: $text-muted;
+            flex-wrap: wrap;
             gap: 8px;
-
-            .like-btn {
-              background: transparent;
-              border: none;
-              cursor: pointer;
-              padding: 6px 8px;
-              border-radius: 8px;
-              font-weight: 700;
-              display: inline-flex;
+            .left {
+              display: flex;
               align-items: center;
-              gap: 6px;
-              transition: transform 0.08s, background 0.12s;
-              color: rgba(207, 247, 241, 0.95);
+              gap: 8px;
+              .uploader {
+                padding: 2px 6px;
+                background: rgba($accent, 0.15);
+                border-radius: 20px;
+                color: $accent-2;
+              }
             }
-
-            .like-btn:hover {
-              transform: translateY(-2px);
-            }
-
-            .heart-icon {
-              width: 18px;
-              height: 18px;
-              display: block;
-              filter: grayscale(100%) opacity(0.9);
-            }
-
-            .like-btn.active .heart-icon {
-              filter: none;
-              transform: scale(1.06);
-              box-shadow: 0 6px 20px rgba(127, 231, 214, 0.10);
-            }
-
-            .badge {
-              padding: 4px 8px;
-              border-radius: 999px;
-              font-size: 12px;
-              font-weight: 700;
-              background: linear-gradient(180deg, rgba(127, 231, 214, 0.12), rgba(95, 200, 180, 0.06));
-              color: #BFF8EE;
-              border: 1px solid rgba(127, 231, 214, 0.04);
+            .right {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              .like-btn {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 4px 8px;
+                border-radius: 40px;
+                transition: all 0.2s;
+                .heart-icon {
+                  width: 18px;
+                  height: 18px;
+                }
+                .count {
+                  font-size: 0.75rem;
+                  color: $text-muted;
+                }
+                &:hover .heart-icon {
+                  transform: scale(1.1);
+                }
+              }
+              .badge {
+                background: rgba($accent, 0.1);
+                padding: 4px 10px;
+                border-radius: 40px;
+                font-size: 0.7rem;
+                border: 1px solid rgba($accent, 0.2);
+              }
             }
           }
         }
       }
-
       .empty {
         text-align: center;
-        color: #7FE7D6;
-        padding: 28px 0;
+        padding: 40px;
+        color: $text-muted;
+        font-size: 0.9rem;
       }
     }
   }
 
+  // 页脚 fixed 底部
   .foot {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     text-align: center;
-    color: rgba(170, 230, 225, 0.86);
-    font-size: 12px;
-    margin: 20px 0 40px;
+    padding: 12px 20px;
+    font-size: 0.75rem;
+    color: $text-muted;
+    border-top: 1px solid $glass-border;
+    background: $card-bg;
+    backdrop-filter: blur(1px);
+    z-index: 10;
   }
 
-  /* 响应式：移动端优化 */
-  @media (max-width: 640px) {
-    padding-top: 80px;
-
+  // 响应式
+  @media (max-width: 768px) {
+    padding-bottom: 70px; // 适应固定页脚高度
     .carousel1 {
       display: none;
     }
-
     .carousel2 {
       display: block;
     }
-
-    .hero {
-      padding: 12px 10px;
-
-      .hero-inner h1 {
-        font-size: 18px;
-      }
-
-      .subtitle {
-        font-size: 12px;
-        color: rgba(191, 248, 238, 0.92);
-      }
+    .hero .hero-inner h1 {
+      font-size: 1.5rem;
     }
-
     .container {
-      padding: 0 14px;
+      padding: 0 16px;
+      .uploader .upload-form .row {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .list {
+        .list-header {
+          flex-direction: column;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .items {
+          max-height: calc(100vh - 450px); // 移动端适配高度
+          .item {
+            padding: 14px 16px;
+            .meta {
+              flex-direction: column;
+              align-items: flex-start;
+              gap: 8px;
+            }
+          }
+        }
+      }
     }
-
-    .upload-form .row {
-      flex-direction: column;
-    }
-
-    .upload-form .actions {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .items .item .title {
-      white-space: normal;
+    .foot {
+      padding: 8px 12px;
+      font-size: 0.7rem;
     }
   }
 }

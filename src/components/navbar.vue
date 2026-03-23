@@ -1,369 +1,673 @@
 <template>
-  <header class="app-header">
-    <h1 class="title">今汐电子设定集</h1>
-    <!-- 在线人数展示 -->
-    <div class="online-count" v-if="onlineCount !== null">
-      当前在线：<span class="count">{{ onlineCount }}人</span>
+  <header class="jinxi-header">
+
+
+    <div class="header-container">
+      <!-- 左侧：标题 + BGM -->
+      <div class="header-left">
+        <div class="title-wrapper">
+          <h1 class="title">
+            <span class="title-main">今汐</span>
+            <span class="title-sub">电子设定集</span>
+          </h1>
+          <div class="title-decoration">
+            <span class="gold-line"></span>
+            <span class="pearl-dot"></span>
+          </div>
+        </div>
+
+        <!-- BGM 控制按钮 -->
+        <button
+          class="music-toggle"
+          :class="{ playing: isMusicPlaying }"
+          @click="toggleMusic"
+          aria-label="播放/暂停背景音乐"
+        >
+          <div class="music-icon">
+            <svg
+              v-if="!isMusicPlaying"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M9 18V5L21 3V13M9 18C9 19.1046 7.88071 20 6.5 20C5.11929 20 4 19.1046 4 18C4 16.8954 5.11929 16 6.5 16C7.88071 16 9 16.8954 9 18ZM21 13C21 14.1046 19.8807 15 18.5 15C17.1193 15 16 14.1046 16 13C16 11.8954 17.1193 11 18.5 11C19.8807 11 21 11.8954 21 13Z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              />
+            </svg>
+            <svg
+              v-else
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
+              <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
+            </svg>
+          </div>
+          <div class="music-pulse" v-if="isMusicPlaying"></div>
+        </button>
+      </div>
+
+      <!-- 中间：在线人数（今州共鸣） -->
+      <div class="online-badge" v-if="onlineCount !== null">
+        <div class="badge-glow"></div>
+    
+        <span class="badge-label">今州共鸣</span>
+        <span class="badge-count">{{ onlineCount }}</span>
+        <span class="badge-unit">人</span>
+      </div>
+
+      <!-- 右侧：导航菜单 + 汉堡按钮 -->
+      <nav class="nav-wrapper">
+        <button
+          class="hamburger"
+          @click="toggleMobileNav"
+          :class="{ open: mobileNavOpen }"
+          aria-label="导航菜单"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+        <div class="nav-links" :class="{ 'nav-open': mobileNavOpen }">
+          <!-- 主导航项（前5项） -->
+          <RouterLink
+            v-for="item in mainNavItems"
+            :key="item.name"
+            :to="item.path"
+            class="nav-link"
+            active-class="active"
+            @click="closeMobileNav"
+          >
+            {{ item.name }}
+          </RouterLink>
+
+          <!-- PC端：下拉菜单“更多” -->
+          <div class="dropdown pc-only">
+            <button class="dropdown-trigger nav-link">
+              更多
+              <svg
+                class="dropdown-arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div class="dropdown-menu">
+              <RouterLink
+                v-for="item in moreNavItems"
+                :key="item.name"
+                :to="item.path"
+                class="dropdown-item"
+                active-class="active"
+                @click="closeMobileNav"
+              >
+                {{ item.name }}
+              </RouterLink>
+              <a
+                href="https://slty.site/#/redirector"
+                target="_blank"
+                rel="noopener"
+                class="dropdown-item"
+                @click="closeMobileNav"
+              >
+                霜落映界
+              </a>
+            </div>
+          </div>
+
+          <!-- 移动端：剩余所有导航项平铺 -->
+          <template v-if="isMobile">
+            <RouterLink
+              v-for="item in moreNavItems"
+              :key="item.name"
+              :to="item.path"
+              class="nav-link mobile-item"
+              active-class="active"
+              @click="closeMobileNav"
+            >
+              {{ item.name }}
+            </RouterLink>
+            <a
+              href="https://slty.site/#/redirector"
+              target="_blank"
+              rel="noopener"
+              class="nav-link mobile-item"
+              @click="closeMobileNav"
+            >
+              霜落映界
+            </a>
+          </template>
+        </div>
+      </nav>
     </div>
-    <!-- 移动端汉堡按钮 -->
-    <button
-      class="hamburger"
-      @click="toggleMobileNav"
-      aria-label="Toggle navigation"
-    >
-      <span :class="{ open: mobileNavOpen }"></span>
-      <span :class="{ open: mobileNavOpen }"></span>
-      <span :class="{ open: mobileNavOpen }"></span>
-    </button>
-
-    <!-- 普通导航 & 移动端下拉导航 -->
-    <nav :class="['nav-links', { 'mobile-open': mobileNavOpen }]">
-      <RouterLink
-        v-for="item in navItems"
-        :key="item.name"
-        :to="item.path"
-        class="nav-item"
-        active-class="active-link"
-        @click="mobileNavOpen = false"
-      >
-        {{ item.name }}
-      </RouterLink>
-
-      <a
-        href="https://slty.site/#/redirector"
-        target="_blank"
-        rel="noopener"
-        class="nav-item"
-        active-class="active-link"
-        @click="mobileNavOpen = false"
-      >
-        霜落映界
-      </a>
-    </nav>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, onBeforeUnmount, onUnmounted } from "vue";
 import { io } from "socket.io-client";
 
-const navItems = [
-  { name: "岁光庭", path: "/" }, // 首页 — 岁主/今汐的开场与光之引导
-  { name: "韶光年谱", path: "/timeLine" }, // 年谱 — 与韶光、时间相关的纪事
-  { name: "愿辰札记", path: "/message" }, // 留言板 — 他人的愿望与寄语处
-  { name: "晷影典藏", path: "/gallery" }, // 图集 — 立绘、草稿与时光影像的收藏
-  { name: "岁主典籍", path: "/resources" }, // 资料库 — 战术笔记、手稿与设定集
-  { name: "流汐低语", path: "/voice" }, // 语音馆 — 今汐的低语、回响与短语录音
-  // { name: "晷铭录", path: "/thanks" }, // 致谢/纪念 — 铭记与仪式感的结尾页
+// 导航配置
+const allNavItems = [
+  { name: "岁光庭", path: "/" },
+  { name: "韶光年谱", path: "/timeLine" },
+  { name: "愿辰札记", path: "/message" },
+  { name: "晷影典藏", path: "/gallery" },
+  { name: "汐语轩", path: "/talk" },
+  { name: "流汐低语", path: "/voice" },
+  { name: "岁主典籍", path: "/resources" },
+  { name: "潮音阁", path: "/music" },
+  { name: "文汐台", path: "/wiki" },
 ];
 
+// 前5项为主导航，其余为更多菜单
+const mainNavItems = allNavItems.slice(0, 5);
+const moreNavItems = allNavItems.slice(5);
+
+// 移动端检测与响应
+const isMobile = ref(false);
 const mobileNavOpen = ref(false);
-function toggleMobileNav() {
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768;
+  if (!isMobile.value) mobileNavOpen.value = false;
+};
+const toggleMobileNav = () => {
   mobileNavOpen.value = !mobileNavOpen.value;
-}
+};
+const closeMobileNav = () => {
+  mobileNavOpen.value = false;
+};
 
+// 在线人数（socket.io）
 const siteId = "jinXi";
-
 const onlineCount = ref<number | null>(null);
-
-// 连接时带上 query.siteId
-const socket: any = io(import.meta.env.VITE_API_BASE_URL, {
-  query: { siteId },
-});
+let socket: any;
 
 onMounted(() => {
+  checkMobile();
+  window.addEventListener("resize", checkMobile);
+  socket = io(import.meta.env.VITE_API_BASE_URL, { query: { siteId } });
   socket.on("onlineCount", (count: number) => {
     onlineCount.value = count;
   });
 });
+onUnmounted(() => {
+  window.removeEventListener("resize", checkMobile);
+  if (socket) socket.disconnect();
+});
+
+// BGM 控制
+const bgmUrl = import.meta.env.VITE_API_BASE_URL + `/music/独坐吟空庭.mp3`;
+const isMusicPlaying = ref(false);
+let audioElement: HTMLAudioElement | null = null;
+
+function initAudio() {
+  if (!audioElement) {
+    audioElement = new Audio(bgmUrl);
+    audioElement.loop = true;
+    audioElement.volume = 0.45;
+    audioElement.addEventListener("ended", () => {
+      isMusicPlaying.value = false;
+    });
+  }
+}
+
+function toggleMusic() {
+  initAudio();
+  if (!audioElement) return;
+  if (isMusicPlaying.value) {
+    audioElement.pause();
+    isMusicPlaying.value = false;
+  } else {
+    audioElement.play().catch((err) => {
+      console.warn("BGM 播放失败", err);
+      isMusicPlaying.value = false;
+    });
+    isMusicPlaying.value = true;
+  }
+}
 
 onBeforeUnmount(() => {
-  socket.disconnect();
+  if (audioElement) {
+    audioElement.pause();
+    audioElement.src = "";
+    audioElement = null;
+  }
 });
 </script>
 
 <style scoped lang="scss">
-.app-header {
-  /* 今汐 - 薄雾潮汐 + 珍珠光 */
-  --deep-bg: rgba(8, 20, 26, 0.78); // 夜色基础但更薄、带绿意
-  --glass-accent: rgba(160, 225, 210, 0.08); // 珍珠青玻璃感（更柔）
-  --accent: #7fe7d6; // 主点光 - 薄雾海绿（清新）
-  --accent-2: #d7fff6; // 次级光 - 珍珠青（柔光）
-  --muted-text: #eef9fb; // 极淡冰霜文字
-  --warm-glow: rgba(255, 238, 180, 0.07); // 极轻微晨金（用作微弱衬光）
-  --faint: rgba(127, 231, 214, 0.05); // 微弱韶光背景点
+// ========== 今汐主题变量 ==========
+$accent: #7fe7d6;       // 薄雾海绿
+$accent2: #d7fff6;      // 珍珠青
+$gold: #e6c77c;         // 龙尾金
+$white: #f0f6fa;        // 月白
+$dark: #0a1115;         // 玄黑底
+$glass-bg: rgba(8, 18, 22, 0.68);
+$glass-border: rgba(127, 231, 214, 0.2);
+$glow: rgba(127, 231, 214, 0.3);
 
+.jinxi-header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 64px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 40px;
-  /* 背景带一层非常薄的绿调渐变 + 珍珠内光 */
-  background: linear-gradient(
-    180deg,
-    rgba(8, 20, 26, 0.46),
-    rgba(10, 24, 28, 0.4)
-  );
-  backdrop-filter: blur(4px) saturate(1.02);
-  box-shadow: 0 6px 28px rgba(6, 12, 14, 0.46),
-    0 0 10px var(--glass-accent) inset;
-  border-bottom: 1px solid rgba(160, 225, 210, 0.04);
-  animation: fadeInDown 0.6s ease-out both;
+  height: 80px;
+  background: $glass-bg;
+  backdrop-filter: blur(2px) saturate(1.4);
+  border-bottom: 1px solid $glass-border;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 
-  /* 标题 - 珍珠光 + 轻晨金衬 */
-  .title {
-    font-size: 26px;
-    font-weight: 700;
-    color: var(--muted-text);
-    background: linear-gradient(90deg, var(--accent), var(--accent-2));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 4px 16px rgba(40, 90, 86, 0.12),
-      0 1px 0 rgba(255, 238, 180, 0.02); /* 极轻金边感 */
-    transition: transform 0.28s ease, text-shadow 0.28s ease;
-    letter-spacing: 0.4px;
-    animation: float-slow 9s ease-in-out infinite;
 
-    &:hover {
-      transform: translateY(-2px) scale(1.03);
-      text-shadow: 0 8px 28px rgba(127, 231, 214, 0.1),
-        0 1px 0 rgba(255, 238, 180, 0.04);
-    }
+
+  .header-container {
+    position: relative;
+    height: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
 
-  /* 在线人数 / 状态 — 珍珠匣牌风 */
-  .online-count {
+  // ========== 左侧区域 ==========
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .title-wrapper {
     position: relative;
-    margin-left: 16px;
-    padding: 6px 14px;
-    font-family: "Cinzel Decorative", serif;
-    font-size: 1rem;
-    color: var(--muted-text);
-    background: linear-gradient(
-      135deg,
-      rgba(127, 231, 214, 0.02),
-      rgba(215, 255, 246, 0.01)
-    );
-    border: 1px solid rgba(127, 231, 214, 0.1);
-    border-radius: 24px;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 6px 18px rgba(6, 12, 14, 0.42),
-      0 0 8px rgba(127, 231, 214, 0.025);
-    overflow: hidden;
-    cursor: default;
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
-
-    &::before {
-      content: "";
-      position: absolute;
-      bottom: -2px;
-      left: -40%;
-      width: 180%;
-      height: 2px;
-      background: linear-gradient(
-        90deg,
-        transparent,
-        var(--accent-2),
-        transparent
-      );
-      opacity: 0.9;
-      filter: blur(5px);
+    .title {
+      margin: 0;
+      font-size: 0;
+      line-height: 1;
     }
-
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(6, 12, 14, 0.48),
-        0 0 18px rgba(127, 231, 214, 0.06);
-    }
-
-    .count {
-      display: inline-block;
-      margin-left: 6px;
-      font-weight: 700;
-      color: var(--accent-2);
-      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    .title-main {
+      font-size: 28px;
+      font-weight: 600;
+      background: linear-gradient(135deg, $white 20%, $accent 60%, $accent2 100%);
+      background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 6px rgba(127, 231, 214, 0.04);
-    }
-  }
-
-  /* 导航链接 — 流光下划调整为更细腻的波纹感 */
-  .nav-links {
-    display: flex;
-    gap: 22px;
-    align-items: center;
-
-    .nav-item {
+      letter-spacing: 2px;
       position: relative;
-      color: var(--muted-text);
-      font-weight: 500;
-      text-decoration: none;
-      transition: color 0.22s ease, transform 0.16s ease;
-      padding: 6px 4px;
-      border-radius: 6px;
-
-      &::after {
-        content: "";
-        position: absolute;
-        left: 50%;
-        bottom: -6px;
-        width: 0;
-        height: 3px;
-        background: linear-gradient(
-          90deg,
-          rgba(255, 255, 255, 0),
-          var(--accent-2),
-          rgba(255, 255, 255, 0)
-        );
-        transition: width 0.36s cubic-bezier(0.2, 0.9, 0.2, 1),
-          left 0.36s cubic-bezier(0.2, 0.9, 0.2, 1), opacity 0.24s;
-        transform: translateX(-50%);
-        opacity: 0.95;
-        border-radius: 3px;
-        filter: blur(0.6px);
-        background-size: 180% 100%;
-        animation: flow 7s linear infinite;
-      }
-
-      &:hover {
-        color: var(--accent-2);
-        transform: translateY(-1.8px);
-        text-shadow: 0 0 6px rgba(127, 231, 214, 0.02);
-      }
-
-      &:hover::after {
-        width: 64%;
-        left: 50%;
-        opacity: 1;
-      }
+      display: inline-block;
+      margin-right: 8px;
+      text-shadow: 0 0 12px rgba($accent, 0.3);
     }
-
-    .active-link {
-      color: var(--accent);
-      font-weight: 600;
-
-      &::after {
-        width: 92%;
-        opacity: 1;
+    .title-sub {
+      font-size: 16px;
+      font-weight: 400;
+      color: rgba($white, 0.8);
+      letter-spacing: 1px;
+      background: none;
+      -webkit-text-fill-color: initial;
+    }
+    .title-decoration {
+      position: absolute;
+      bottom: -12px;
+      left: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      .gold-line {
+        width: 40px;
+        height: 2px;
+        background: linear-gradient(90deg, $gold, transparent);
+        border-radius: 2px;
+      }
+      .pearl-dot {
+        width: 4px;
+        height: 4px;
+        background: $accent2;
+        border-radius: 50%;
+        box-shadow: 0 0 6px $accent2;
       }
     }
   }
 
-  /* 汉堡按钮（移动） - 线条更柔和 */
+  .music-toggle {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba($accent, 0.08);
+    border: 1px solid rgba($accent, 0.35);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+
+    .music-icon {
+      width: 22px;
+      height: 22px;
+      svg {
+        width: 100%;
+        height: 100%;
+        stroke: currentColor;
+        fill: none;
+      }
+    }
+    .music-pulse {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 1px solid $accent;
+      animation: pulseRing 1.5s infinite;
+    }
+    &:hover {
+      background: rgba($accent, 0.2);
+      border-color: $accent;
+      transform: scale(1.05);
+      box-shadow: 0 0 12px $glow;
+    }
+    &.playing {
+      color: $accent;
+      border-color: $accent;
+      background: rgba($accent, 0.15);
+    }
+  }
+
+  // ========== 在线人数徽章 ==========
+  .online-badge {
+    position: relative;
+    background: rgba($dark, 0.6);
+    backdrop-filter: blur(8px);
+    border-radius: 40px;
+    padding: 6px 18px 6px 14px;
+    border: 1px solid rgba($accent, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    overflow: hidden;
+    .badge-glow {
+      position: absolute;
+      top: 0;
+      left: -50%;
+      width: 200%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba($accent, 0.2), transparent);
+      transform: skewX(-25deg);
+      animation: shine 6s infinite;
+    }
+
+    .badge-label {
+      font-size: 0.8rem;
+      color: rgba($white, 0.8);
+      letter-spacing: 0.5px;
+    }
+    .badge-count {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: $accent;
+      text-shadow: 0 0 6px $glow;
+      line-height: 1;
+    }
+    .badge-unit {
+      font-size: 0.7rem;
+      color: $accent2;
+      opacity: 0.9;
+    }
+    &:hover {
+      border-color: $accent;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  // ========== 导航区域 ==========
+  .nav-wrapper {
+    display: flex;
+    align-items: center;
+  }
+
   .hamburger {
     display: none;
     flex-direction: column;
-    justify-content: space-around;
+    justify-content: space-between;
     width: 28px;
-    height: 24px;
-    background: none;
+    height: 22px;
+    background: transparent;
     border: none;
     cursor: pointer;
     padding: 0;
-
+    z-index: 20;
     span {
       display: block;
       width: 100%;
-      height: 3px;
-      background: rgba(238, 249, 251, 0.9);
+      height: 2px;
+      background: $white;
       border-radius: 2px;
-      transition: transform 0.28s ease, opacity 0.28s ease, background 0.28s;
-      box-shadow: 0 2px 6px rgba(8, 16, 18, 0.18);
+      transition: all 0.25s ease;
     }
-
-    span.open:nth-child(1) {
+    &.open span:nth-child(1) {
       transform: translateY(10px) rotate(45deg);
     }
-
-    span.open:nth-child(2) {
+    &.open span:nth-child(2) {
       opacity: 0;
     }
-
-    span.open:nth-child(3) {
+    &.open span:nth-child(3) {
       transform: translateY(-10px) rotate(-45deg);
     }
   }
 
-  @media (max-width: 768px) {
-    padding: 0 20px;
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    transition: all 0.3s;
 
-    .title {
-      display: none;
+    .nav-link {
+      position: relative;
+      color: $white;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 450;
+      padding: 8px 4px;
+      transition: all 0.25s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, $accent, $accent2);
+        transition: width 0.3s, left 0.3s;
+        transform: translateX(-50%);
+        border-radius: 2px;
+      }
+      &:hover {
+        color: $accent;
+        transform: translateY(-1px);
+        &::after {
+          width: 80%;
+          left: 50%;
+        }
+      }
     }
+    .active {
+      color: $accent;
+      &::after {
+        width: 70%;
+      }
+    }
+
+    // 下拉菜单
+    .dropdown {
+      position: relative;
+      .dropdown-trigger {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        .dropdown-arrow {
+          width: 12px;
+          height: 12px;
+          transition: transform 0.2s;
+        }
+      }
+      .dropdown-menu {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        min-width: 160px;
+        background: rgba(8, 18, 22, 0.96);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        border: 1px solid rgba($accent, 0.3);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3), 0 1px 0 rgba($accent2, 0.1) inset;
+        padding: 10px 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-12px);
+        transition: all 0.25s;
+        z-index: 110;
+        .dropdown-item {
+          display: block;
+          padding: 8px 20px;
+          color: $white;
+          text-decoration: none;
+          font-size: 0.9rem;
+          transition: all 0.2s;
+          white-space: nowrap;
+          &:hover {
+            background: rgba($accent, 0.12);
+            color: $accent;
+            padding-left: 26px;
+          }
+          &.active {
+            color: $accent;
+            background: rgba($accent, 0.08);
+            border-left: 3px solid $accent;
+          }
+        }
+      }
+      &:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
+      &:hover .dropdown-arrow {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  // ========== 响应式 ==========
+  @media (max-width: 860px) {
+    .header-container {
+      padding: 0 24px;
+    }
+    .title-main {
+      font-size: 24px;
+    }
+    .title-sub {
+      font-size: 14px;
+    }
+    .online-badge {
+      padding: 4px 12px;
+      .badge-label {
+        display: none;
+      }
+      .badge-count {
+        font-size: 1.1rem;
+      }
+    }
+    .nav-links {
+      gap: 20px;
+      .nav-link {
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    height: 70px;
     .hamburger {
       display: flex;
     }
-
     .nav-links {
-      position: absolute;
-      top: 64px;
+      position: fixed;
+      top: 70px;
       left: 0;
       right: 0;
       flex-direction: column;
-      background: linear-gradient(
-        180deg,
-        rgba(10, 24, 28, 0.98),
-        rgba(8, 18, 22, 0.995)
-      );
-      backdrop-filter: blur(10px);
-      gap: 0;
-      overflow: hidden;
+      align-items: stretch;
+      background: rgba(6, 14, 18, 0.98);
+      backdrop-filter: blur(20px);
       max-height: 0;
-      transition: max-height 0.34s ease;
-      border-top: 1px solid rgba(215, 255, 246, 0.035);
-
-      &.mobile-open {
-        max-height: 520px;
+      overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      gap: 0;
+      border-top: 1px solid rgba($accent, 0.2);
+      box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+      &.nav-open {
+        max-height: 580px;
       }
-
-      .nav-item {
-        padding: 14px 20px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+      .nav-link {
+        padding: 14px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        width: 100%;
+        text-align: left;
+        &::after {
+          display: none;
+        }
+        &:hover {
+          transform: none;
+        }
+      }
+      .active {
+        background: linear-gradient(90deg, rgba($accent, 0.1), transparent);
+        border-left: 3px solid $accent;
+      }
+      .dropdown {
+        display: none;
+      }
+      .mobile-item {
+        display: block;
       }
     }
   }
 }
 
-/* 关键帧保留，略微延长浮动周期以显柔和 */
-@keyframes flow {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+
+@keyframes drift {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(3%, 2%) scale(1.05); }
+}
+@keyframes shine {
+  0% { transform: translateX(-100%) skewX(-25deg); }
+  20% { transform: translateX(100%) skewX(-25deg); }
+  100% { transform: translateX(100%) skewX(-25deg); }
+}
+@keyframes pulseRing {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
 
-@keyframes float-slow {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3.5px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
+// 工具类
+.pc-only {
+  @media (max-width: 768px) {
+    display: none;
   }
 }
 </style>

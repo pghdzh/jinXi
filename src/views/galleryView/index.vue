@@ -1,5 +1,20 @@
 <template>
   <div class="gallery-container">
+    <!-- 动态背景装饰 -->
+    <div class="dynamic-bg">
+      <div class="bg-glow bg-glow-1"></div>
+      <div class="bg-glow bg-glow-2"></div>
+      <div class="bg-glow bg-glow-3"></div>
+      <div class="particle-field">
+        <span
+          v-for="i in 60"
+          :key="i"
+          class="particle"
+          :style="getParticleStyle(i)"
+        ></span>
+      </div>
+    </div>
+
     <button class="upload-btn" @click="openUploadModal">上传图片</button>
 
     <section class="gallery section">
@@ -9,9 +24,20 @@
         </button>
       </div>
       <div class="gallery-grid">
-        <div v-for="(img, index) in images" :key="img.id" class="card" @click="openLightbox(index)" ref="cards">
+        <div
+          v-for="(img, index) in images"
+          :key="img.id"
+          class="card"
+          @click="openLightbox(index)"
+          ref="cards"
+        >
           <div class="card-inner">
-            <img :src="img.src" :alt="img.alt" loading="lazy" @load="onImageLoad($event)" />
+            <img
+              :src="img.src"
+              :alt="img.alt"
+              loading="lazy"
+              @load="onImageLoad($event)"
+            />
             <div class="overlay">
               <span>查看大图</span>
             </div>
@@ -22,12 +48,11 @@
           </div>
         </div>
       </div>
-      <!-- sentinel：用于触发无限滚动 -->
       <div ref="sentinel" class="sentinel"></div>
-      <!-- 可选：加载中/结束提示 -->
       <div class="loading" v-if="loading">加载中...</div>
       <div class="finished" v-if="finished">已全部加载</div>
     </section>
+
     <aside class="ranking-panel">
       <div class="panel-header" @click="expanded = !expanded">
         <h3 class="ranking-title">排行榜</h3>
@@ -36,7 +61,12 @@
       </div>
       <transition name="fade">
         <ul v-if="expanded" class="ranking-list">
-          <li v-for="(item, idx) in rankingList" :key="idx" class="ranking-item" :class="`rank-${idx + 1}`">
+          <li
+            v-for="(item, idx) in rankingList"
+            :key="idx"
+            class="ranking-item"
+            :class="`rank-${idx + 1}`"
+          >
             <span class="rank">{{ idx + 1 }}</span>
             <span class="name">{{ item.nickname }}</span>
             <span class="count">{{ item.count }} 张</span>
@@ -44,6 +74,7 @@
         </ul>
       </transition>
     </aside>
+
     <!-- Lightbox Modal -->
     <div v-if="lightboxOpen" class="lightbox" @click.self="closeLightbox">
       <span class="close" @click="closeLightbox">✕</span>
@@ -53,12 +84,19 @@
     </div>
 
     <!-- 上传弹窗 -->
-    <div v-if="uploadModalOpen" class="upload-modal-overlay" @click.self="closeUploadModal">
+    <div
+      v-if="uploadModalOpen"
+      class="upload-modal-overlay"
+      @click.self="closeUploadModal"
+    >
       <div class="upload-modal">
         <h3>批量上传图片</h3>
         <div class="tip-container">
           <ul class="tips-list">
-            <li>审核规则： 1.不要色情倾向（不要露三点，我怕被封） 2.要我能认出是今汐。</li>
+            <li>
+              审核规则： 1.不要色情倾向（不要露三点，我怕被封）
+              2.要我能认出是今汐。
+            </li>
             <li>
               由于没有用户系统，我这边不好做审核反馈，但只要显示上传成功，我这边肯定能收到。
             </li>
@@ -80,7 +118,13 @@
         </label>
         <label>
           选择图片（最多 {{ remaining }} 张）：
-          <input ref="fileInput" type="file" multiple accept="image/*" @change="handleFileSelect" />
+          <input
+            ref="fileInput"
+            type="file"
+            multiple
+            accept="image/*"
+            @change="handleFileSelect"
+          />
         </label>
         <p class="tip" v-if="selectedFiles.length">
           已选 {{ selectedFiles.length }} 张
@@ -95,17 +139,22 @@
     </div>
 
     <div class="floating-chibis">
-      <img v-for="(pet, i) in chibiList" :key="i" :src="pet.src" :style="{ top: pet.top + 'px', left: pet.left + 'px' }"
-        class="chibi-img" />
+      <img
+        v-for="(pet, i) in chibiList"
+        :key="i"
+        :src="pet.src"
+        :style="{ top: pet.top + 'px', left: pet.left + 'px' }"
+        class="chibi-img"
+      />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, computed, nextTick, onBeforeUnmount } from "vue";
-import { uploadImages } from "@/api/modules/images"; // 前面封装的上传接口
-import { getRankingList } from "@/api/modules/ranking"; // 根据你的实际路径调整
-import { gsap } from "gsap"; // ← 本地引入
+import { uploadImages } from "@/api/modules/images";
+import { getRankingList } from "@/api/modules/ranking";
+import { gsap } from "gsap";
 import { getImagesLikesList, likeImage } from "@/api/modules/imagesLikes";
 import { debounce } from "lodash";
 
@@ -125,26 +174,20 @@ function toggleSort() {
   window.scrollTo(0, 0);
   loadNextPage();
 }
-// 获取已点赞 ID 数组
+
 function getLikedIds(): number[] {
   const data = localStorage.getItem("likedImageIds");
   return data ? JSON.parse(data) : [];
 }
-
-// 保存已点赞 ID 数组
 function setLikedIds(ids: number[]) {
   localStorage.setItem("likedImageIds", JSON.stringify(ids));
 }
-
 async function handleLike(img: ImageItem) {
-  if (img.liked) return; // 已点过就不重复调用
-
+  if (img.liked) return;
   try {
-    await likeImage(img.id); // 调用后端接口
-    img.likeCount += 1; // 本地更新点赞数
-    img.liked = true; // 标记已点赞
-
-    // 更新 localStorage
+    await likeImage(img.id);
+    img.likeCount += 1;
+    img.liked = true;
     const likedIds = getLikedIds();
     likedIds.push(img.id);
     setLikedIds(likedIds);
@@ -161,19 +204,15 @@ interface ImageItem {
   id: number;
   liked: Boolean;
 }
-
 interface RankingItem {
-  id?: number; // 如果接口返回有 id，可加上
+  id?: number;
   nickname: string;
   count: number;
 }
 const rankingList = ref<RankingItem[]>([]);
 const expanded = ref(true);
-
-// 默认分页参数（如不分页可省略）
 const page = 1;
 const pageSize = 99;
-
 const fetchRanking = async () => {
   const res = await getRankingList({ page, pageSize, character_key: "jinXi" });
   if (res.success) {
@@ -183,17 +222,13 @@ const fetchRanking = async () => {
   }
 };
 
-// 响应式存放最终图片列表
 const images = ref<ImageItem[]>([]);
-
 const pageImage = ref(1);
 const limit = ref(10);
 const loading = ref(false);
 const finished = ref(false);
-
 const sentinel = ref<HTMLElement | null>(null);
 
-// 1. 在外层创建一个单例 observerCard
 const observerCard = new IntersectionObserver(
   (entries) => {
     entries.forEach((entry) => {
@@ -205,7 +240,6 @@ const observerCard = new IntersectionObserver(
   },
   { threshold: 0.1 }
 );
-// 2. 每次有新卡片时，都调用这个方法去挂载观察
 async function observeNewCards(startIndex = 0) {
   await nextTick();
   const cards = document.querySelectorAll<HTMLElement>(".card");
@@ -214,9 +248,8 @@ async function observeNewCards(startIndex = 0) {
   }
 }
 const fixImageUrl = (url: string): string => {
-  if (url.includes('127.0.0.1')) {
-    // 将 127.0.0.1 替换为当前页面的完整源（协议+域名）
-    return url.replace('http://127.0.0.1', window.location.origin);
+  if (url.includes("127.0.0.1")) {
+    return url.replace("http://127.0.0.1", window.location.origin);
   }
   return url;
 };
@@ -240,20 +273,18 @@ async function loadNextPage() {
       src: fixImageUrl(item.url),
       alt: "",
       likeCount: item.like_count,
-      id: item.id, // 如果需要的话，方便点赞用
+      id: item.id,
       liked: likedIds.includes(item.id),
     }));
     if (list.length === 0) {
       finished.value = true;
       return;
     }
-    // 记录加载前的长度，方便后面找出“新增”节点
     const oldLength = images.value.length;
     const existingIds = new Set(images.value.map((i) => i.id));
     const filtered = list.filter((item) => !existingIds.has(item.id));
     images.value.push(...filtered);
     pageImage.value++;
-
     observeNewCards(oldLength);
   } catch (err) {
     console.error(err);
@@ -262,7 +293,6 @@ async function loadNextPage() {
   }
 }
 
-// 3. 给 loadNextPage 包装一个防抖版
 const debouncedLoad = debounce(
   () => {
     loadNextPage();
@@ -273,7 +303,6 @@ const debouncedLoad = debounce(
 
 const lightboxOpen = ref(false);
 const currentIndex = ref(0);
-
 function openLightbox(index: number) {
   currentIndex.value = index;
   lightboxOpen.value = true;
@@ -289,7 +318,6 @@ function nextImage() {
   currentIndex.value = (currentIndex.value + 1) % images.value.length;
 }
 
-// 渐显＆Blur‑Up 效果
 function onImageLoad(e: Event) {
   const img = e.target as HTMLImageElement;
   const card = img.closest(".card");
@@ -297,13 +325,10 @@ function onImageLoad(e: Event) {
 }
 
 // 上传弹窗逻辑
-
 const uploadModalOpen = ref(false);
 const nickname = ref("");
 const fileInput = ref<HTMLInputElement>();
 const selectedFiles = ref<File[]>([]);
-
-// 从 localStorage 读取“今天”已上传数量
 function getTodayKey() {
   return `uploaded_${new Date().toISOString().slice(0, 10)}`;
 }
@@ -311,8 +336,6 @@ const uploadedToday = ref<number>(
   Number(localStorage.getItem(getTodayKey()) || 0)
 );
 const remaining = computed(() => Math.max(27 - uploadedToday.value, 0));
-
-// 控制提交按钮
 const canSubmit = computed(() => {
   return (
     nickname.value.trim().length > 0 &&
@@ -320,49 +343,35 @@ const canSubmit = computed(() => {
     selectedFiles.value.length <= remaining.value
   );
 });
-
-// 放在 script 顶部，或者 utils 里
 function clearOldUploadRecords() {
   const today = new Date();
   const storage = window.localStorage;
   for (const key of Object.keys(storage)) {
     if (!key.startsWith("uploaded_")) continue;
-
-    // key 格式 uploaded_YYYY-MM-DD
     const dateStr = key.slice("uploaded_".length);
     const recordDate = new Date(dateStr);
     if (isNaN(recordDate.getTime())) continue;
-
-    // 计算相差天数
     const diffMs = today.getTime() - recordDate.getTime();
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
-
-    // 如果超过 2 天，就删掉
     if (diffDays > 2) {
       storage.removeItem(key);
     }
   }
 }
-
 function openUploadModal() {
   clearOldUploadRecords();
   nickname.value = "";
   selectedFiles.value = [];
   if (fileInput.value) fileInput.value.value = "";
-  // 每次打开重新刷新已上传数
   uploadedToday.value = Number(localStorage.getItem(getTodayKey()) || 0);
   uploadModalOpen.value = true;
 }
 function closeUploadModal() {
   uploadModalOpen.value = false;
 }
-
-// 本地截断到剩余数量
 function handleFileSelect(e: Event) {
   const files = Array.from((e.target as HTMLInputElement).files || []);
-
   if (!files) return;
-
   const validFiles: File[] = [];
   for (const file of files) {
     if (file.size > 20 * 1024 * 1024) {
@@ -371,9 +380,7 @@ function handleFileSelect(e: Event) {
     }
     validFiles.push(file);
   }
-
   if (validFiles.length === 0) return;
-
   if (validFiles.length > remaining.value) {
     alert(
       `今天最多还能上传 ${remaining.value} 张，已为你截取前 ${remaining.value} 张`
@@ -394,13 +401,10 @@ async function submitUpload() {
       "jinXi"
     );
     const uploadedCount = res.data.length;
-    // 更新 localStorage
     uploadedToday.value += uploadedCount;
     localStorage.setItem(getTodayKey(), String(uploadedToday.value));
-
     alert(`成功上传 ${uploadedCount} 张图片`);
     closeUploadModal();
-    // …可选：刷新画廊列表或把新图片追加到 images …
   } catch (err: any) {
     console.error(err);
     alert(err.message || "上传失败");
@@ -414,20 +418,13 @@ interface Chibi {
   top: number;
   left: number;
 }
-
 const chibiList = ref<Chibi[]>([]);
 let sentinelObserver: IntersectionObserver;
-// Scroll-triggered lazy animation
+
 onMounted(async () => {
-  // 1. 拉排行榜
   await fetchRanking();
-
-  // 2. 拉第一页图片并挂载动画 observer
-  await loadNextPage(); // 内部会调用 observeNewCards(oldLen)
-  // 对首次卡片做一次完整 observe
+  await loadNextPage();
   observeNewCards(0);
-
-  // 3. 初始化 sentinelObserver，再 observe
   sentinelObserver = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting) debouncedLoad();
@@ -437,18 +434,13 @@ onMounted(async () => {
   if (sentinel.value) {
     sentinelObserver.observe(sentinel.value);
   }
-  // 1. 基础配置信息
   const total = 9;
-  let pickCount = 3; // 每次抽取 3 张
+  let pickCount = 3;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const isMobile = window.innerWidth <= 768;
-  // 如果已知单张小人图片的宽高，可避免超出边界；
-  // 假设小人图片宽 100px、高 100px，按需替换：
   const imgWidth = 100;
   const imgHeight = 100;
-
-  // 2. Fisher–Yates 洗牌函数
   function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -456,32 +448,21 @@ onMounted(async () => {
     }
     return array;
   }
-
-  // 3. 随机选出 3 个编号
-  if (isMobile) {
-    pickCount = 1;
-  }
+  if (isMobile) pickCount = 1;
   const nums = shuffle(Array.from({ length: total }, (_, k) => k + 1));
   const picks = nums.slice(0, pickCount);
-
-  // 4. 生成随机位置并填充 chibiList
-  chibiList.value = []; // 先清空
+  chibiList.value = [];
   picks.forEach((i) => {
     chibiList.value.push({
       src: `/QImages/1 (${i}).png`,
-      left: Math.random() * (vw - imgWidth), // 保证不超出左右边界
-      top: Math.random() * (vh - imgHeight), // 保证不超出上下边界
+      left: Math.random() * (vw - imgWidth),
+      top: Math.random() * (vh - imgHeight),
     });
   });
-
-  // 2. 等 img 渲染到 DOM
   await nextTick();
-
-  // 3. 给每个小人绑定 GSAP 动画
   const imgs = document.querySelectorAll<HTMLImageElement>(".chibi-img");
   imgs.forEach((img, index) => {
-    const padding = 200; // 边缘预留空间
-    // ✅ 初始出场动画（闪现）
+    const padding = 200;
     gsap.fromTo(
       img,
       { opacity: 0, scale: 0.5 },
@@ -493,40 +474,30 @@ onMounted(async () => {
         delay: 0.2 * index,
       }
     );
-
-    // ✅ 鼠标靠近闪避
     img.addEventListener("mouseenter", () => {
       gsap.killTweensOf(img);
-
       gsap.to(img, {
         x: "+=" + ((Math.random() - 0.5) * 400).toFixed(0),
         y: "+=" + ((Math.random() - 0.5) * 400).toFixed(0),
         duration: 1.2,
         ease: "back.out(2)",
         onComplete: () => {
-          // 闪避完成后，再重新启用动画
           animate(img);
         },
       });
     });
-
     const animate = (img: HTMLImageElement) => {
       let { x, y } = img.getBoundingClientRect();
       let deltaX = (Math.random() - 0.5) * 200;
       let deltaY = (Math.random() - 0.5) * 200;
-
-      // 预测一下偏移后的位置
       let nextX = x + deltaX;
       let nextY = y + deltaY;
-
-      // 校正：防漂出左、右、上、下边界
       if (nextX < padding) deltaX = padding - x;
       if (nextX + img.width > window.innerWidth - padding)
         deltaX = window.innerWidth - padding - (x + img.width);
       if (nextY < padding) deltaY = padding - y;
       if (nextY + img.height > window.innerHeight - padding)
         deltaY = window.innerHeight - padding - (y + img.height);
-
       gsap.to(img, {
         x: `+=${deltaX.toFixed(0)}`,
         y: `+=${deltaY.toFixed(0)}`,
@@ -543,52 +514,172 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   observerCard.disconnect();
   sentinelObserver.disconnect();
-  // 以及你在 onMounted 里新建的其它 Observer
 });
+
+// 随机粒子样式（辅助背景）
+const getParticleStyle = (i: number) => {
+  const size = Math.random() * 4 + 1.5;
+  const left = Math.random() * 100;
+  const top = Math.random() * 100;
+  const duration = Math.random() * 20 + 12;
+  const delay = Math.random() * 10;
+  const opacity = Math.random() * 0.4 + 0.2;
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${left}%`,
+    top: `${top}%`,
+    animationDuration: `${duration}s`,
+    animationDelay: `${delay}s`,
+    opacity,
+  };
+};
 </script>
 
-<style lang="scss" scoped>
-$bg: #0d0d0d;
-$accent: #d14b4b;
-$text: #fde8e8;
-@use "sass:color";
+<style scoped lang="scss">
+// 今汐主题色
+$accent: #7fe7d6; // 薄雾海绿
+$accent-2: #d7fff6; // 珍珠青
+$gold: #e6c77c; // 龙尾金
+$white: #f0f6fa; // 月白
+$dark: #021016; // 玄黑底
+$card-bg: rgba(8, 22, 26, 0.65);
+$glass-border: rgba(127, 231, 214, 0.25);
+$text-light: #f5fffd;
+$text-muted: rgba(245, 255, 253, 0.7);
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-.floating-chibis {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
+@keyframes floatGlow {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  100% {
+    transform: translate(40px, 30px) scale(1.2);
+    opacity: 0.3;
+  }
 }
-
-.chibi-img {
-  position: absolute;
-  width: 80px;
-  user-select: none;
-  transform-origin: center center;
-  pointer-events: auto;
-  position: absolute;
-  z-index: 10;
+@keyframes floatParticle {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.6;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-100px) translateX(50px);
+    opacity: 0;
+  }
+}
+@keyframes pop {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.2);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
 }
 
 .gallery-container {
-  background: radial-gradient(circle at center, #111 0%, $bg 100%);
-  color: $text;
+  position: relative;
   min-height: 100vh;
+  background: linear-gradient(145deg, #021016 0%, #06242a 100%);
+  color: $text-light;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "PingFang SC", sans-serif;
   padding-bottom: 60px;
+  overflow-x: hidden;
+
+  // 动态背景层
+  .dynamic-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+
+    .bg-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      animation: floatGlow 20s infinite alternate;
+      &.bg-glow-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, $accent, transparent);
+        top: -20%;
+        left: -15%;
+        animation-duration: 22s;
+      }
+      &.bg-glow-2 {
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, $accent-2, transparent);
+        bottom: -25%;
+        right: -10%;
+        animation-duration: 26s;
+        animation-delay: -6s;
+      }
+      &.bg-glow-3 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, $gold, transparent);
+        top: 40%;
+        left: 30%;
+        animation-duration: 28s;
+        animation-delay: -10s;
+      }
+    }
+    .particle-field {
+      position: absolute;
+      inset: 0;
+      .particle {
+        position: absolute;
+        background: rgba($accent-2, 0.5);
+        border-radius: 50%;
+        filter: blur(2px);
+        animation: floatParticle linear infinite;
+      }
+    }
+  }
 
   .section {
+    position: relative;
+    z-index: 2;
     padding: 80px 20px;
     max-width: 1200px;
     margin: 0 auto;
@@ -599,7 +690,7 @@ $text: #fde8e8;
       .sort-btn {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
+        gap: 12px;
         padding: 10px 28px 10px 56px;
         font-size: 1rem;
         line-height: 1;
@@ -609,47 +700,33 @@ $text: #fde8e8;
         border-radius: 28px;
         position: relative;
         overflow: hidden;
-        border: 1px solid rgba(127, 231, 214, 0.03);
+        border: 1px solid $glass-border;
+        background: rgba(8, 22, 26, 0.8);
+        backdrop-filter: blur(8px);
+        color: $accent-2;
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3),
+          inset 0 1px 0 rgba($accent, 0.1);
+        transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 
-        /* 今汐：暗匣底 + 珍珠薄雾纹理（写死色值） */
-        background: linear-gradient(90deg,
-            rgba(6, 18, 16, 0.82) 0%,
-            rgba(8, 22, 20, 0.92) 50%,
-            rgba(6, 16, 14, 0.96) 100%);
-        color: #DFFDF9;
-        /* 珍珠青文本 */
-        box-shadow:
-          0 10px 28px rgba(3, 10, 10, 0.56),
-          inset 0 1px 0 rgba(127, 231, 214, 0.01);
-        transition: transform 200ms cubic-bezier(0.2, 0.9, 0.25, 1),
-          box-shadow 200ms ease, background 260ms ease,
-          color 160ms ease, filter 200ms ease;
-        -webkit-tap-highlight-color: transparent;
-        will-change: transform, box-shadow, filter;
-
-        /* 左侧徽记 —— 今汐版：小珍珠/波纹徽记（冷色）*/
         &::after {
           content: "";
           position: absolute;
           left: 18px;
           top: 50%;
           transform: translateY(-50%) rotate(-12deg);
-          width: 18px;
-          height: 22px;
-          border-radius: 4px;
-          /* 珍珠到薄雾海绿的微渐变，作为小徽记 */
-          background: linear-gradient(180deg,
-              #DFFDF9 0%,
-              #7FE7D6 70%);
-          box-shadow: 0 6px 18px rgba(34, 92, 86, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.02);
-          /* 保留类似纹章形状 */
-          clip-path: polygon(50% 0, 78% 25%, 100% 45%, 50% 100%, 0% 45%, 22% 25%);
+          width: 20px;
+          height: 24px;
+          background: linear-gradient(135deg, $accent-2, $accent);
+          clip-path: polygon(
+            50% 0,
+            78% 25%,
+            100% 45%,
+            50% 100%,
+            0% 45%,
+            22% 25%
+          );
           pointer-events: none;
-          z-index: 3;
-          transition: transform 220ms ease, opacity 220ms ease, box-shadow 220ms ease;
         }
-
-        /* 左侧微光环（今汐微珍珠光） */
         &::before {
           content: "";
           position: absolute;
@@ -658,53 +735,18 @@ $text: #fde8e8;
           transform: translateY(-50%);
           width: 44px;
           height: 44px;
-          border-radius: 50%;
-          background: radial-gradient(circle at 35% 35%, rgba(127, 231, 214, 0.06), transparent 45%);
+          background: radial-gradient(circle, rgba($accent, 0.1), transparent);
           filter: blur(6px);
           pointer-events: none;
-          opacity: 0.9;
-          z-index: 1;
         }
-
-        /* hover：暗底微变，徽记放大且发出珍珠微光 */
         &:hover {
-          transform: translateY(-5px) scale(1.02);
-          box-shadow:
-            0 22px 66px rgba(3, 10, 10, 0.66),
-            0 0 44px rgba(127, 231, 214, 0.10);
-          filter: saturate(1.04) brightness(1.02);
-          color: #7FE7D6;
-          /* hover 文本偏薄雾海绿 */
-          background: linear-gradient(90deg,
-              rgba(6, 18, 16, 0.88) 0%,
-              rgba(8, 22, 20, 0.94) 50%,
-              rgba(6, 16, 14, 0.98) 100%);
-        }
-
-        &:hover::after {
-          transform: translateY(-56%) rotate(-6deg) scale(1.12);
-          box-shadow: 0 10px 30px rgba(127, 231, 214, 0.14), inset 0 2px 6px rgba(255, 255, 255, 0.06);
-          opacity: 1;
-        }
-
-        /* active（按下）反馈：更内敛 */
-        &:active {
-          transform: translateY(-2px) scale(0.995);
-          box-shadow:
-            0 10px 28px rgba(3, 10, 10, 0.5),
-            0 0 20px rgba(127, 231, 214, 0.06);
-        }
-
-        /* keyboard focus 可见环（无障碍） */
-        &:focus-visible {
-          outline: none;
-          box-shadow:
-            0 22px 66px rgba(3, 10, 10, 0.66),
-            0 0 0 6px rgba(127, 231, 214, 0.06);
+          transform: translateY(-4px);
+          box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+          background: rgba(8, 22, 26, 0.9);
+          color: $accent;
         }
       }
     }
-
 
     .gallery-grid {
       display: grid;
@@ -715,102 +757,89 @@ $text: #fde8e8;
         perspective: 1000px;
         opacity: 0;
         transform: translateY(20px);
-
         &.visible {
           animation: fadeInUp 0.6s ease forwards;
         }
-
-        &.loaded {
-
-          // Blur-up & grayscale removed
-          .card-inner img {
-            filter: none;
-            opacity: 1;
-          }
+        &.loaded .card-inner img {
+          filter: none;
+          opacity: 1;
         }
-
         .card-inner {
           position: relative;
-          border-radius: 12px;
+          border-radius: 16px;
           overflow: hidden;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+          background: $card-bg;
+          backdrop-filter: blur(8px);
+          border: 1px solid $glass-border;
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
           transform-style: preserve-3d;
-          transition: transform 0.5s ease, box-shadow 0.5s ease;
-
+          transition: transform 0.4s, box-shadow 0.4s;
           &:hover {
-            transform: rotateY(6deg) rotateX(3deg) scale(1.05);
-            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.9);
+            transform: rotateY(6deg) rotateX(3deg) scale(1.02);
+            box-shadow: 0 16px 32px rgba(0, 0, 0, 0.4);
+            border-color: rgba($accent, 0.5);
           }
-
           img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             display: block;
-            filter: blur(20px) grayscale(100%);
+            filter: blur(20px) grayscale(30%);
             opacity: 0.6;
             transition: filter 0.6s ease, opacity 0.6s ease;
           }
-
           .overlay {
             position: absolute;
             bottom: 0;
             width: 100%;
             padding: 12px 0;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
             text-align: center;
             opacity: 0;
-            transition: opacity 0.4s;
-
+            transition: opacity 0.3s;
             span {
-              color: $text;
+              color: $text-light;
               font-family: "Cinzel Decorative", serif;
-              font-size: 1.1rem;
-              letter-spacing: 1px;
+              font-size: 1rem;
               background: rgba(0, 0, 0, 0.6);
               padding: 4px 12px;
               border-radius: 20px;
+              backdrop-filter: blur(4px);
             }
           }
-
           &:hover .overlay {
             opacity: 1;
           }
-
           .like-btn {
             position: absolute;
             bottom: 12px;
             right: 12px;
-            background: transparent;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
             border: none;
             cursor: pointer;
             z-index: 2;
             display: flex;
             align-items: center;
             gap: 6px;
-            padding: 4px;
-            border-radius: 50%;
-            transition: transform 0.2s ease;
-
+            padding: 6px 10px;
+            border-radius: 40px;
+            transition: transform 0.2s;
             &:hover {
-              transform: scale(1.3);
+              transform: scale(1.05);
             }
-
             .heart {
-              width: 24px;
-              height: 24px;
+              width: 22px;
+              height: 22px;
               background: url("/icons/heart-red-outline.svg") no-repeat center;
               background-size: contain;
-              transition: all 0.3s ease;
-              filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.7));
+              transition: all 0.3s;
+              filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.5));
             }
-
             .liked {
               background: url("/icons/heart-red-filled.svg") no-repeat center;
               background-size: contain;
               animation: pop 0.4s ease;
-
-              /* 持续呼吸光效 */
               &::after {
                 content: "";
                 position: absolute;
@@ -825,29 +854,11 @@ $text: #fde8e8;
                 pointer-events: none;
               }
             }
-
             .like-count {
-              font-size: 1rem;
-              color: #ff4b4b;
-              text-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+              font-size: 0.85rem;
+              color: #ff6b6b;
               font-weight: bold;
-            }
-          }
-
-          @keyframes pulse {
-            0% {
-              transform: translate(-50%, -50%) scale(0.6);
-              opacity: 0.6;
-            }
-
-            50% {
-              transform: translate(-50%, -50%) scale(1.2);
-              opacity: 0;
-            }
-
-            100% {
-              transform: translate(-50%, -50%) scale(0.6);
-              opacity: 0;
+              text-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
             }
           }
         }
@@ -863,43 +874,36 @@ $text: #fde8e8;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-
     img {
       max-width: 85%;
       max-height: 85%;
-      border-radius: 8px;
+      border-radius: 12px;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.9);
-      animation: fadeInUp 0.4s ease;
     }
-
     .close,
     .prev,
     .next {
       position: absolute;
-      color: $text;
+      color: $text-light;
       font-size: 2.5rem;
       cursor: pointer;
       user-select: none;
       padding: 8px;
       border-radius: 50%;
-      transition: background 0.3s;
-
+      transition: color 0.2s;
       &:hover {
-        color: #4ed6c6;
+        color: $accent;
       }
     }
-
     .close {
       top: 20px;
       right: 20px;
     }
-
     .prev {
       left: 20px;
       top: 50%;
       transform: translateY(-50%);
     }
-
     .next {
       right: 20px;
       top: 50%;
@@ -911,48 +915,27 @@ $text: #fde8e8;
     position: fixed;
     bottom: 64px;
     left: 24px;
+    z-index: 10;
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    padding: 12px 18px;
+    padding: 12px 20px;
     font-size: 1rem;
-    font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial,
-      sans-serif;
-    z-index: 10;
+    font-weight: 600;
+    font-family: "PingFang SC", "Noto Sans SC", sans-serif;
     cursor: pointer;
-    user-select: none;
-
-    color: #043832;
-    background: linear-gradient(90deg,
-        rgba(127, 231, 214, 0.98) 0%,
-        rgba(223, 253, 249, 0.98) 60%);
-    border-radius: 28px;
-
-    backdrop-filter: blur(6px) saturate(120%);
-    -webkit-backdrop-filter: blur(6px) saturate(120%);
-
-
-    box-shadow:
-      0 14px 36px rgba(4, 12, 10, 0.44),
-      0 0 28px rgba(127, 231, 214, 0.08);
-    ;
-
-
-    overflow: visible;
-    transition: transform 220ms cubic-bezier(0.2, 0.9, 0.25, 1),
-      box-shadow 220ms ease, background 260ms ease, filter 220ms ease;
-
-    /* hover：微抬起、光晕增强 */
+    background: linear-gradient(90deg, $accent, $accent-2);
+    border: none;
+    border-radius: 40px;
+    color: $dark;
+    box-shadow: 0 8px 20px rgba($accent, 0.3);
+    transition: transform 0.2s, box-shadow 0.2s;
     &:hover {
-      transform: translateY(-6px) scale(1.02);
-      box-shadow:
-        0 26px 68px rgba(4, 12, 10, 0.52),
-        0 0 56px rgba(127, 231, 214, 0.12);
-      filter: brightness(1.02) saturate(1.03);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px rgba($accent, 0.4);
     }
   }
 
-  /* 遮罩层：深海薄雾 + 珍珠微光（颜色写死） */
   .upload-modal-overlay {
     position: fixed;
     inset: 0;
@@ -960,468 +943,241 @@ $text: #fde8e8;
     display: flex;
     align-items: center;
     justify-content: center;
-
-    /* 今汐风遮罩：深海绿 -> 深潮色 */
-    background: linear-gradient(180deg,
-        rgba(4, 23, 22, 0.86),
-        rgba(5, 20, 20, 0.78));
-
-    /* 轻微模糊以保留底下内容感知 */
-    backdrop-filter: blur(10px) saturate(1.05);
-    -webkit-backdrop-filter: blur(10px) saturate(1.05);
-
-    /* 顶层珍珠光斑（低饱和、不抢眼）*/
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background:
-        radial-gradient(700px 260px at 50% 28%,
-          rgba(127, 231, 214, 0.06),
-          transparent 14%),
-        linear-gradient(180deg, rgba(0, 0, 0, 0.22), transparent 40%);
-      mix-blend-mode: screen;
-    }
-  }
-
-  /* 模态主体：今汐风的暗匣 + 珍珠边缘 */
-  .upload-modal {
-    position: relative;
-    width: 720px;
-    max-width: calc(100% - 40px);
-    padding: 36px;
-    border-radius: 16px;
-    overflow: hidden;
-    z-index: 2100;
-    color: #EAF9F8;
-    /* 珍珠浅色文字 */
-    font-family: "Helvetica Neue", "Noto Sans SC", "PingFang SC", sans-serif;
-    -webkit-font-smoothing: antialiased;
-
-    /* 背景：深海玻璃感（写死色值） */
-    background: linear-gradient(180deg,
-        rgba(6, 20, 18, 0.94),
-        rgba(8, 18, 16, 0.92));
-    border: 1px solid rgba(127, 231, 214, 0.03);
-    backdrop-filter: blur(6px) saturate(1.02);
-    -webkit-backdrop-filter: blur(6px) saturate(1.02);
-    box-shadow: 0 30px 90px rgba(3, 8, 8, 0.78), inset 0 1px 0 rgba(127, 231, 214, 0.02);
-
-    /* 珍珠微光边缘（伪元素） */
-    &::before {
-      content: "";
-      position: absolute;
-      inset: -2px;
-      border-radius: 18px;
-      pointer-events: none;
-      background: linear-gradient(90deg,
-          rgba(127, 231, 214, 0.04),
-          rgba(223, 253, 249, 0.02),
-          rgba(127, 231, 214, 0.03));
-      filter: blur(12px);
-      mix-blend-mode: screen;
-      opacity: 0.95;
-    }
-
-    h3 {
-      margin: 0 0 16px 0;
-      font-size: 1.5rem;
-      color: #DFFDF9;
-      /* 珍珠青标题 */
-      font-weight: 900;
-      text-align: center;
-      letter-spacing: 0.6px;
-      text-shadow: 0 6px 20px rgba(6, 48, 44, 0.06);
-    }
-
-    .stats {
-      margin: 18px 0;
-      font-size: 1rem;
-      text-align: center;
-      color: rgba(234, 249, 248, 0.94);
-
-      strong {
-        color: #7FE7D6;
-        /* 薄雾海绿强调 */
+    background: rgba(2, 16, 22, 0.85);
+    backdrop-filter: blur(12px);
+    .upload-modal {
+      position: relative;
+      width: 720px;
+      max-width: calc(100% - 40px);
+      padding: 32px;
+      border-radius: 28px;
+      background: $card-bg;
+      backdrop-filter: blur(12px);
+      border: 1px solid $glass-border;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      color: $text-light;
+      h3 {
+        margin: 0 0 16px;
+        font-size: 1.6rem;
+        background: linear-gradient(90deg, $accent-2, $white);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-align: center;
       }
-    }
-
-    /* tip 区块：匣中深色 + 左侧珍珠强调线 */
-    .tip-container {
-      margin-top: 18px;
-      padding: 14px 18px;
-      background: linear-gradient(180deg,
-          rgba(8, 18, 16, 0.60),
-          rgba(6, 14, 12, 0.56));
-      border-left: 4px solid rgba(127, 231, 214, 0.12);
-      border-radius: 10px;
-      backdrop-filter: blur(4px);
-      color: rgba(234, 249, 248, 0.94);
-
-      .tips-list {
-        list-style: none;
-        margin: 0;
-        padding: 0;
-
-        li {
-          position: relative;
-          padding-left: 34px;
-          margin-bottom: 10px;
-          font-size: 0.95rem;
-          color: rgba(230, 249, 246, 0.94);
-
-          &::before {
-            content: "";
-            position: absolute;
-            left: 8px;
-            top: 8px;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            /* 珍珠小徽记（今汐色写死） */
-            background: radial-gradient(circle at 30% 30%,
-                #DFFDF9 0%,
-                rgba(127, 231, 214, 0.88) 20%,
-                #7FE7D6 60%,
-                #4ed6c6 100%);
-            box-shadow: 0 6px 18px rgba(34, 92, 86, 0.06);
+      .tip-container {
+        margin: 16px 0;
+        padding: 16px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 16px;
+        border-left: 3px solid $accent;
+        .tips-list {
+          list-style: none;
+          padding: 0;
+          margin: 0;
+          li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 8px;
+          
           }
-
-          &:last-child {
-            margin-bottom: 0;
+        }
+      }
+      .stats {
+        text-align: center;
+        strong {
+          color: $accent;
+        }
+      }
+      label {
+        display: block;
+        margin: 16px 0;
+        input,
+        textarea {
+          width: 100%;
+          margin-top: 8px;
+          padding: 10px 14px;
+          border-radius: 12px;
+          border: 1px solid $glass-border;
+          background: rgba(0, 0, 0, 0.3);
+          color: $text-light;
+          outline: none;
+          transition: border-color 0.2s;
+          &:focus {
+            border-color: $accent;
+          }
+        }
+      }
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+        button {
+          padding: 10px 24px;
+          border-radius: 40px;
+          border: none;
+          font-weight: 600;
+          cursor: pointer;
+          transition: transform 0.2s, background 0.2s;
+          &:not(.cancel) {
+            background: linear-gradient(90deg, $accent, $accent-2);
+            color: $dark;
+            &:hover:not(:disabled) {
+              transform: translateY(-2px);
+            }
+            &:disabled {
+              opacity: 0.5;
+              animation: cursorAnimation_disabled 1s infinite step-start;
+            }
+          }
+          &.cancel {
+            background: transparent;
+            border: 1px solid $glass-border;
+            color: $text-muted;
+            &:hover {
+              background: rgba($accent, 0.1);
+            }
           }
         }
       }
     }
-
-    .tip {
-      margin-top: 10px;
-      text-align: right;
-      font-size: 0.9rem;
-      color: rgba(230, 249, 246, 0.86);
-    }
-
-    /* 表单控件：深色输入框 + 聚焦时珍珠高光 */
-    label {
-      display: block;
-      margin-bottom: 18px;
-      font-size: 0.95rem;
-      color: rgba(230, 249, 246, 0.96);
-
-      input[type="text"],
-      input[type="file"],
-      textarea {
-        width: 100%;
-        margin-top: 8px;
-        padding: 12px 14px;
-        border-radius: 10px;
-        border: 1px solid rgba(127, 231, 214, 0.03);
-        background: linear-gradient(180deg,
-            rgba(10, 16, 14, 0.6),
-            rgba(8, 14, 12, 0.64));
-        color: rgba(234, 249, 248, 0.96);
-        font-size: 0.95rem;
-        outline: none;
-        transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-        box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.44);
-      }
-
-      input[type="text"]::placeholder,
-      textarea::placeholder {
-        color: rgba(218, 241, 238, 0.56);
-      }
-
-      input[type="text"]:focus,
-      input[type="file"]:focus,
-      textarea:focus {
-        border-color: rgba(127, 231, 214, 0.36);
-        box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06), 0 2px 8px rgba(127, 231, 214, 0.04);
-        transform: translateY(-1px);
-      }
-    }
-
-    /* 按钮行：主按钮改为珍珠渐变，取消为透明珍珠边 */
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 14px;
-      margin-top: 28px;
-      flex-wrap: wrap;
-      align-items: center;
-
-      button {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 24px;
-        cursor: pointer;
-        font-weight: 800;
-        font-size: 0.95rem;
-        transition: background 0.22s ease, box-shadow 0.22s ease, transform 0.12s ease;
-        min-width: 96px;
-        color: #023232;
-        /* 深色文字保证对比 */
-      }
-
-      /* 主按钮：珍珠渐变（今汐） */
-      button:not(.cancel) {
-        background: linear-gradient(135deg,
-            #DFFDF9 0%,
-            #BFF8EA 45%,
-            #7FE7D6 100%);
-        box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06), 0 4px 18px rgba(64, 160, 140, 0.04);
-        color: #023232;
-      }
-
-      button:not(.cancel):hover:not(:disabled) {
-        transform: translateY(-4px);
-        box-shadow: 0 22px 66px rgba(5, 18, 16, 0.32), 0 8px 28px rgba(127, 231, 214, 0.08);
-      }
-
-      button:not(.cancel):disabled {
-        background: linear-gradient(135deg, rgba(8, 14, 12, 0.48), rgba(6, 12, 10, 0.44));
-        opacity: 0.6;
-        cursor: not-allowed;
-        box-shadow: none;
-        color: rgba(180, 220, 215, 0.6);
-      }
-
-      /* 取消按钮：透明珍珠边风格 */
-      button.cancel {
-        background: transparent;
-        border: 2px solid rgba(127, 231, 214, 0.06);
-        color: rgba(230, 245, 243, 0.9);
-        min-width: 86px;
-        box-shadow: inset 0 -4px 8px rgba(0, 0, 0, 0.22);
-      }
-
-      button.cancel:hover {
-        background: rgba(127, 231, 214, 0.02);
-      }
-    }
   }
 
-
   .ranking-panel {
-    width: 220px;
-    padding: 16px;
+    width: 240px;
     position: fixed;
     top: 84px;
-    right: 12px;
-    z-index: 1200;
-    color: #EAF9F8;
-    /* 珍珠浅色文字 */
-    font-family: "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
-
-    /* 今汐：深海玻璃 -> 深潮色 */
-    background: linear-gradient(180deg,
-        rgba(4, 23, 22, 0.94),
-        rgba(6, 28, 26, 0.92));
-    border-radius: 18px;
-    border: 1px solid rgba(127, 231, 214, 0.03);
-    -webkit-backdrop-filter: blur(8px) saturate(1.02);
-    backdrop-filter: blur(8px) saturate(1.02);
-    box-shadow: 0 18px 56px rgba(3, 8, 8, 0.72), inset 0 1px 0 rgba(127, 231, 214, 0.02);
-
-    &.collapsed {
-      height: auto;
-      padding-bottom: 8px;
-    }
-
+    right: 20px;
+    z-index: 100;
+    background: $card-bg;
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    border: 1px solid $glass-border;
+    padding: 16px;
+    color: $text-light;
+    transition: all 0.2s;
     .panel-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 8px;
       cursor: pointer;
-      user-select: none;
-      padding-bottom: 6px;
-
       .ranking-title {
         margin: 0;
-        font-size: 1.05rem;
-        font-weight: 900;
-        color: #DFFDF9;
-        /* 珍珠青标题 */
-        font-family: "Zhi Mang Xing", "STKaiti", serif;
-        letter-spacing: 0.6px;
-        text-shadow: 0 6px 18px rgba(6, 48, 44, 0.06);
+        font-size: 1.1rem;
+        background: linear-gradient(90deg, $accent-2, $white);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
       }
-
       .toggle-icon {
-        font-size: 1rem;
-        color: #7FE7D6;
-        /* 薄雾海绿图标色 */
-        background: linear-gradient(180deg, rgba(8, 20, 18, 0.48), rgba(6, 16, 14, 0.36));
-        padding: 6px 8px;
-        border-radius: 9px;
-        border: 1px solid rgba(127, 231, 214, 0.02);
-        box-shadow: 0 6px 14px rgba(3, 10, 10, 0.44), inset 0 1px 0 rgba(127, 231, 214, 0.01);
-        transition: transform 220ms, box-shadow 220ms;
+        background: rgba($accent, 0.1);
+        padding: 4px 8px;
+        border-radius: 20px;
+        transition: transform 0.2s;
       }
-
-      /* header hover / focus 更明显的珍珠微光 */
-      &:hover .toggle-icon,
-      &:focus-within .toggle-icon {
+      &:hover .toggle-icon {
         transform: translateY(-2px);
-        box-shadow: 0 12px 30px rgba(127, 231, 214, 0.06), inset 0 1px 0 rgba(127, 231, 214, 0.02);
       }
     }
-
-    /* 列表容器 */
     .ranking-list {
       list-style: none;
       padding: 0;
       margin: 12px 0 0;
+      max-height: 60vh;
       overflow-y: auto;
-      max-height: 55vh;
-
       &::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
+        width: 4px;
       }
-
       &::-webkit-scrollbar-thumb {
-        background: linear-gradient(180deg, rgba(127, 231, 214, 0.18), rgba(223, 253, 249, 0.10));
-        border-radius: 8px;
-        border: 1px solid rgba(127, 231, 214, 0.02);
-      }
-
-      &::-webkit-scrollbar-track {
-        background: transparent;
+        background: $accent;
+        border-radius: 4px;
       }
     }
-
     .ranking-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 8px 10px;
-      margin-bottom: 8px;
+      margin: 6px 0;
       border-radius: 12px;
-      cursor: default;
-
-      /* 今汐风：暗匣小卡片，薄雾边线 */
-      background: linear-gradient(180deg, rgba(8, 24, 22, 0.56), rgba(6, 20, 18, 0.54));
-
-      transition: transform 260ms cubic-bezier(.2, .9, .3, 1), box-shadow 260ms, background 260ms, color 200ms;
-      position: relative;
-
+      background: rgba(0, 0, 0, 0.2);
+      transition: transform 0.2s;
       &:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 18px 48px rgba(4, 12, 10, 0.56), 0 0 28px rgba(127, 231, 214, 0.04);
-        background: linear-gradient(90deg, rgba(10, 26, 24, 0.66), rgba(8, 22, 20, 0.62));
+        transform: translateX(-4px);
+        background: rgba($accent, 0.08);
       }
-
-      &:focus-within,
-      &:focus {
-        outline: none;
-        box-shadow: 0 18px 48px rgba(127, 231, 214, 0.06), 0 0 0 4px rgba(127, 231, 214, 0.03);
-        transform: translateY(-4px);
-      }
-
       .rank {
-        width: 36px;
-        text-align: center;
-        font-weight: 900;
-        font-size: 1rem;
-        color: #DFFDF9;
-        /* 珍珠数字 */
-        text-shadow: 0 2px 8px rgba(6, 48, 44, 0.06);
-        flex-shrink: 0;
+        width: 32px;
+        font-weight: bold;
+        color: $accent;
       }
-
       .name {
         flex: 1;
         padding: 0 8px;
-        font-size: 0.95rem;
-        color: #DFFDF9;
-        font-weight: 700;
-        white-space: normal;
-        word-break: break-word;
-        line-height: 1.25;
-      }
-
-      .count {
         font-size: 0.9rem;
-        color: #7FE7D6;
-        /* 薄雾海绿小计数 */
-        font-weight: 800;
-        min-width: 36px;
-        text-align: right;
-        text-shadow: 0 2px 6px rgba(6, 48, 44, 0.04);
-        flex-shrink: 0;
       }
-
-      /* ---------- 前三名强化（今汐版：珍珠 / 冷金 / 石青） ---------- */
+      .count {
+        font-size: 0.85rem;
+        color: $accent-2;
+      }
       &.rank-1 {
-        background: linear-gradient(135deg, #DFFDF9 0%, #BFF8EE 50%, #7FE7D6 100%);
-        color: #042826;
-        box-shadow: 0 18px 56px rgba(127, 231, 214, 0.12), 0 0 30px rgba(127, 231, 214, 0.06);
-
+        background: linear-gradient(
+          90deg,
+          rgba($accent, 0.2),
+          rgba($accent-2, 0.1)
+        );
         .rank {
-          color: #042826;
-          text-shadow: 0 4px 14px rgba(2, 10, 10, 0.16);
-        }
-
-        .name {
-          color: #042826;
-        }
-
-        .count {
-          color: #042826;
+          color: $gold;
         }
       }
-
       &.rank-2 {
-        background: linear-gradient(135deg, #CFF8EE 0%, #9FEFE1 55%, #6ED6BC 100%);
-        color: #042826;
-        box-shadow: 0 14px 48px rgba(64, 190, 170, 0.08);
-
+        background: linear-gradient(
+          90deg,
+          rgba($accent-2, 0.15),
+          rgba($accent, 0.08)
+        );
         .rank {
-          color: #042826;
-        }
-
-        .name {
-          color: #042826;
-        }
-
-        .count {
-          color: #042826;
+          color: $accent-2;
         }
       }
-
       &.rank-3 {
-        background: linear-gradient(135deg, rgba(175, 240, 225, 0.12) 0%, rgba(140, 230, 210, 0.16) 60%, rgba(96, 200, 180, 0.20) 100%);
-        color: #DFFDF9;
-        box-shadow: 0 10px 36px rgba(70, 160, 140, 0.08);
-
+        background: linear-gradient(
+          90deg,
+          rgba($gold, 0.15),
+          rgba($accent, 0.08)
+        );
         .rank {
-          color: #CFF6F0;
-        }
-
-        .name {
-          color: #DFFDF9;
-        }
-
-        .count {
-          color: #CFF6F0;
+          color: $gold;
         }
       }
-    }
-
-    /* 淡入淡出（保留原过渡类） */
-    .fade-enter-active,
-    .fade-leave-active {
-      transition: opacity 0.28s ease;
-    }
-
-    .fade-enter-from,
-    .fade-leave-to {
-      opacity: 0;
     }
   }
 
+  .floating-chibis {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    .chibi-img {
+      position: absolute;
+      width: 80px;
+      user-select: none;
+      transform-origin: center;
+      pointer-events: auto;
+      filter: drop-shadow(0 0 6px rgba($accent, 0.3));
+    }
+  }
 
+  .loading,
+  .finished {
+    text-align: center;
+    padding: 20px;
+    color: $text-muted;
+    font-size: 0.9rem;
+  }
+  .sentinel {
+    height: 1px;
+  }
 }
 </style>

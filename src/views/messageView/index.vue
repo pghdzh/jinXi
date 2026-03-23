@@ -1,185 +1,161 @@
 <template>
-  <div class="megumi-message-board" aria-live="polite">
-    <!-- 背景轮播（两组用于桌面/移动不同裁切） -->
-    <div class="carousel carousel1" aria-hidden="true">
-      <img
-        v-for="(src, idx) in randomFive"
-        :key="idx"
-        :src="src"
-        class="carousel-image"
-        :class="{ active: idx === currentIndex }"
-      />
-    </div>
-    <div class="carousel carousel2" aria-hidden="true">
-      <img
-        v-for="(src, idx) in randomFive2"
-        :key="idx"
-        :src="src"
-        class="carousel-image"
-        :class="{ active: idx === currentIndex }"
-      />
-    </div>
-    <!-- 半透明顶部标题 -->
-    <header class="board-header" role="banner">
-      <div class="title-wrap">
-        <h1>留言板</h1>
-        <span class="title-count">（共{{ count }}条）</span>
-
-        <p class="subtitle">潮声寄语，岁光回响</p>
+  <div class="jinxi-message-board">
+    <!-- 动态光效背景 -->
+    <div class="dynamic-bg">
+      <div class="bg-glow bg-glow-1"></div>
+      <div class="bg-glow bg-glow-2"></div>
+      <div class="bg-glow bg-glow-3"></div>
+      <div class="particle-field">
+        <span
+          v-for="i in 80"
+          :key="i"
+          class="particle"
+          :style="getParticleStyle(i)"
+        ></span>
       </div>
-    </header>
+      <div class="wave-overlay"></div>
+    </div>
 
-    <!-- 留言展示区 -->
-    <section class="message-list">
-      <transition-group name="msg" tag="div" class="message-list-inner">
-        <div v-if="loading" class="skeleton-wrap" key="skeleton">
-          <div class="skeleton" v-for="i in 1" :key="i">
-            <div class="sk-avatar"></div>
-            <div class="sk-lines">
-              <div class="sk-line short"></div>
-              <div class="sk-line"></div>
-            </div>
-          </div>
+    <div class="board-container">
+      <!-- 页眉 -->
+      <header class="board-header">
+        <div class="title-section">
+          <h1>今汐 · 留言板</h1>
+          <span class="total-count">共 {{ total }} 条</span>
         </div>
-        <div
-          v-for="(msg, idx) in messages"
-          :key="msg.id || msg._tempId || idx"
-          class="message-card"
-          :data-index="idx"
-          tabindex="0"
-          role="article"
-          :aria-label="`留言来自 ${msg.name || '匿名'}，内容：${msg.content}`"
-        >
-          <div class="message-meta">
-            <div class="left-meta">
-              <div class="name-avatar" :title="msg.name || '匿名'">
+        <p class="subtitle">潮声寄语，岁光回响</p>
+      </header>
+
+      <!-- 留言列表 -->
+      <section class="message-list" ref="listRef">
+        <transition-group name="msg" tag="div" class="message-list-inner">
+          <div v-for="msg in messages" :key="msg.id" class="message-card">
+            <div class="card-glow"></div>
+            <div class="card-meta">
+              <div
+                class="avatar"
+                :style="{ background: getAvatarColor(msg.content) }"
+              >
                 {{ getInitial(msg.name) }}
               </div>
-              <div class="meta-texts">
-                <div class="message-name">{{ msg.name || "匿名" }}</div>
-                <div class="message-time">{{ formatTime(msg.created_at) }}</div>
+              <div class="info">
+                <div class="name">{{ msg.name || "匿名" }}</div>
+                <div class="time">{{ formatTime(msg.created_at) }}</div>
+              </div>
+              <div class="badge">
+                <svg
+                  class="tide-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M2 12C4 10 6 8 8 8C10 8 12 10 14 12C16 14 18 16 20 16C22 16 22 12 22 12"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linecap="round"
+                  />
+                  <path
+                    d="M2 18C4 16 6 14 8 14C10 14 12 16 14 18C16 20 18 22 20 22C22 22 22 18 22 18"
+                    stroke="currentColor"
+                    stroke-width="1.2"
+                    stroke-linecap="round"
+                  />
+                  <circle cx="12" cy="8" r="1.5" fill="currentColor" />
+                  <circle cx="12" cy="14" r="1" fill="currentColor" />
+                </svg>
               </div>
             </div>
-            <!-- HTML：把 id/class 复制到对应位置 -->
-            <div
-              class="shouan-icon"
-              role="button"
-              tabindex="0"
-              aria-label="共鸣之晶"
-            >
-              <!-- 替换用：焰棋徽（aria-hidden） -->
-              <svg
-                viewBox="0 0 48 48"
-                width="36"
-                height="36"
-                aria-hidden="true"
-                focusable="false"
-              >
-                <!-- 核心：抽象火焰 / 棋子意象（兼具策略与焰） -->
-                <g class="ember-core" transform="translate(0,0)">
-                  <path
-                    d="M24 14 C26 18, 30 20, 28 26 C26 32, 22 34, 24 38 C20 34, 18 30, 20 26 C22 22, 24 20, 24 14 Z"
-                  />
-                </g>
-
-                <!-- 飞烬 / 星屑 -->
-                <g class="ember-sparks" aria-hidden="true">
-                  <circle cx="6" cy="10" r="0.95" />
-                  <circle cx="42" cy="14" r="0.8" />
-                  <circle cx="38" cy="36" r="0.75" />
-                  <circle cx="10" cy="34" r="0.7" />
-                </g>
-              </svg>
-            </div>
+            <div class="content">{{ msg.content }}</div>
+            <div class="card-deco"></div>
           </div>
+        </transition-group>
 
-          <p class="message-content">{{ msg.content }}</p>
+        <div ref="sentinel" class="sentinel"></div>
+        <div v-if="loadingMore" class="loading-tip">
+          <span class="loading-spinner"></span>
+          正在聆听更多的愿望...
         </div>
-      </transition-group>
-    </section>
+        <div v-if="!hasMore && messages.length > 0" class="end-tip">
+          ✨ 已至潮汐尽头 ✨
+        </div>
+      </section>
 
-    <!-- 底部发送区 -->
-    <section class="message-form" aria-label="写下你的留言">
-      <label class="sr-only" for="mb-name">你的昵称</label>
-      <input
-        id="mb-name"
-        v-model="name"
-        type="text"
-        placeholder="你的昵称"
-        @keydown.enter.prevent
-      />
-
-      <label class="sr-only" for="mb-content">留言内容</label>
-      <textarea
-        id="mb-content"
-        v-model="content"
-        placeholder="写下你的留言..."
-        @keydown.ctrl.enter.prevent="submitMessage"
-        @input="autoGrow"
-        ref="textareaRef"
-      />
-
-      <div class="form-row">
-        <div class="hint">按 <kbd>Ctrl</kbd> + <kbd>Enter</kbd> 快捷发送</div>
-        <button @click="submitMessage" :disabled="isSending || !content.trim()">
-          <span v-if="!isSending">发送</span>
-          <span v-else>发送中…</span>
-        </button>
-      </div>
-    </section>
+      <!-- 底部输入区 -->
+      <footer class="message-form">
+        <div class="form-row">
+          <input
+            v-model="name"
+            type="text"
+            placeholder="你的昵称"
+            class="name-input"
+            @keydown.enter.prevent
+          />
+          <div class="textarea-wrap">
+            <textarea
+              v-model="content"
+              placeholder="写下你的留言... (Ctrl+Enter 发送)"
+              @keydown.ctrl.enter.prevent="submitMessage"
+              @input="autoGrow"
+              ref="textareaRef"
+            ></textarea>
+            <div class="textarea-glow"></div>
+          </div>
+        </div>
+        <div class="form-actions">
+          <div class="hint">
+            <span class="hint-icon">✨</span>
+            每一份心意都会被珍藏
+          </div>
+          <button
+            @click="submitMessage"
+            :disabled="submitting || !content.trim()"
+          >
+            <span v-if="!submitting">发送寄语</span>
+            <span v-else>发送中…</span>
+          </button>
+        </div>
+      </footer>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
+import { ref, onMounted, onUnmounted, nextTick } from "vue";
 import { getMessageList, createMessage } from "@/api/modules/message";
 
+// ---------- 分页状态 ----------
 const messages = ref<any[]>([]);
-const count = ref(0);
+const total = ref(0);
+const currentPage = ref(1);
+const pageSize = 20;
+const hasMore = ref(true);
+const loadingMore = ref(false);
+const submitting = ref(false);
+
+// 表单数据
 const name = ref(localStorage.getItem("message_name") || "");
 const content = ref("");
-const loading = ref(true);
-const isSending = ref(false);
-
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
+const listRef = ref<HTMLElement | null>(null);
+const sentinel = ref<HTMLElement | null>(null);
 
-const fetchMessages = async () => {
-  loading.value = true;
-  try {
-    const res = await getMessageList({ page: 1, pageSize: 9999 });
-    messages.value = res.data || [];
-    count.value = res.pagination.total;
-    await nextTick();
-  } catch (err) {
-    console.error(err);
-  } finally {
-    loading.value = false;
-  }
+let observer: IntersectionObserver | null = null;
+
+// ---------- 辅助函数 ----------
+const getInitial = (n?: string) => {
+  if (!n) return "匿";
+  return n.trim().slice(0, 1).toUpperCase();
 };
 
-const submitMessage = async () => {
-  if (!content.value.trim() || isSending.value) return;
-  isSending.value = true;
-  const payload = { name: name.value || "匿名", content: content.value };
-  try {
-    localStorage.setItem("message_name", name.value);
-    content.value = "";
-    await nextTick();
-    // 发送请求
-    await createMessage(payload);
-    // 重新同步列表（更可靠）
-    await fetchMessages();
-  } catch (err) {
-    console.error(err);
-  } finally {
-    isSending.value = false;
-  }
+const getAvatarColor = (name?: string) => {
+  const hue = ((name?.length || 0) * 37) % 360;
+  return `hsla(${hue}, 80%, 70%, 1)`;
 };
 
 const formatTime = (time: string) => {
   if (!time) return "";
   const d = new Date(time);
-  // 例如：2025-08-11 15:30
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
@@ -188,812 +164,612 @@ const formatTime = (time: string) => {
   return `${y}-${m}-${day} ${hh}:${mm}`;
 };
 
-const getInitial = (n?: string) => {
-  if (!n) return "匿";
-  return n.trim().slice(0, 1).toUpperCase();
-};
-
-const autoGrow = (e?: Event) => {
+const autoGrow = () => {
   const ta = textareaRef.value;
   if (!ta) return;
   ta.style.height = "auto";
-  const h = Math.min(ta.scrollHeight, 220);
-  ta.style.height = h + "px";
+  ta.style.height = Math.min(ta.scrollHeight, 200) + "px";
 };
 
-// ========== 背景图片导入与轮播 ==========
-const modules = import.meta.glob("@/assets/images1/*.{jpg,png,jpeg,webp}", {
-  eager: true,
-});
-const allSrcs: string[] = Object.values(modules).map((mod: any) => mod.default);
-
-const modules2 = import.meta.glob("@/assets/images2/*.{jpg,png,jpeg,webp}", {
-  eager: true,
-});
-const allSrcs2: string[] = Object.values(modules2).map(
-  (mod: any) => mod.default
-);
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+// ---------- 加载留言 ----------
+const loadMessages = async (reset = false) => {
+  if (reset) {
+    currentPage.value = 1;
+    messages.value = [];
+    hasMore.value = true;
   }
-  return a;
-}
-const randomFive = ref<string[]>(shuffle(allSrcs).slice(0, 5));
-const randomFive2 = ref<string[]>(shuffle(allSrcs2).slice(0, 5));
 
-const currentIndex = ref(0);
-let Imgtimer: number | undefined;
+  if (!hasMore.value) return;
+  if (loadingMore.value) return;
 
-onMounted(() => {
-  fetchMessages();
-  Imgtimer = window.setInterval(() => {
-    currentIndex.value =
-      (currentIndex.value + 1) % Math.max(1, randomFive.value.length);
-  }, 5200);
-  nextTick(() => autoGrow());
+  loadingMore.value = true;
+  try {
+    const res = await getMessageList({
+      page: currentPage.value,
+      pageSize,
+    });
+    const newMessages = res.data || [];
+    if (reset) {
+      messages.value = newMessages;
+    } else {
+      messages.value = [...messages.value, ...newMessages];
+    }
+    total.value = res.pagination?.total || 0;
+    const totalPages = res.pagination?.totalPages || 1;
+    hasMore.value = currentPage.value < totalPages;
+    if (hasMore.value) currentPage.value++;
+  } catch (err) {
+    console.error("加载留言失败", err);
+  } finally {
+    loadingMore.value = false;
+  }
+};
+
+const refreshMessages = async () => {
+  currentPage.value = 1;
+  messages.value = [];
+  hasMore.value = true;
+  await loadMessages(false);
+};
+
+// ---------- 提交留言 ----------
+const submitMessage = async () => {
+  if (!content.value.trim() || submitting.value) return;
+  submitting.value = true;
+  try {
+    await createMessage({
+      name: name.value || "匿名",
+      content: content.value,
+    });
+    localStorage.setItem("message_name", name.value);
+    content.value = "";
+    autoGrow();
+    await refreshMessages();
+    if (listRef.value) {
+      listRef.value.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  } catch (err) {
+    console.error("发送失败", err);
+  } finally {
+    submitting.value = false;
+  }
+};
+
+// ---------- 无限滚动监听 ----------
+const initObserver = () => {
+  if (!sentinel.value) return;
+  observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && hasMore.value && !loadingMore.value) {
+        loadMessages();
+      }
+    },
+    { threshold: 0.1 }
+  );
+  observer.observe(sentinel.value);
+};
+
+// ---------- 随机粒子样式 ----------
+const getParticleStyle = (i: number) => {
+  const size = Math.random() * 5 + 1.5;
+  const left = Math.random() * 100;
+  const top = Math.random() * 100;
+  const duration = Math.random() * 20 + 12;
+  const delay = Math.random() * 10;
+  const opacity = Math.random() * 0.4 + 0.2;
+  return {
+    width: `${size}px`,
+    height: `${size}px`,
+    left: `${left}%`,
+    top: `${top}%`,
+    animationDuration: `${duration}s`,
+    animationDelay: `${delay}s`,
+    opacity,
+  };
+};
+
+// ---------- 生命周期 ----------
+onMounted(async () => {
+  await loadMessages(true);
+  await nextTick();
+  initObserver();
 });
 
-onBeforeUnmount(() => {
-  if (Imgtimer) clearInterval(Imgtimer);
+onUnmounted(() => {
+  if (observer) observer.disconnect();
 });
 </script>
 
 <style scoped lang="scss">
-$bg-start: #041718; // 深海绿底
-$bg-end: #062c2b; // 深潮色
-$accent-1: #7fe7d6; // 薄雾海绿（主光）
-$accent-2: #dffdf9; // 珍珠青（次光）
-$text-main: #eaf9f8; // 正文浅色
-$text-muted: rgba(234, 249, 248, 0.78);
-$card-bg: rgba(8, 26, 24, 0.46); // 玻璃卡片底
-$card-border: rgba(127, 231, 214, 0.06);
-$soft-shadow: rgba(3, 10, 10, 0.5);
-$inner-glow: rgba(127, 231, 214, 0.03);
-$pearl-glow: rgba(127, 231, 214, 0.06);
+// 今汐主题色 - 提升亮度
+$accent: #7fe7d6; // 薄雾海绿
+$accent-2: #b0fff2; // 珍珠青 (提亮)
+$gold: #f3d48f; // 暖金
+$white: #ffffff;
+$light-bg: #e2f3f0; // 极浅青白底
+$dark-bg: #093238; // 深潮色 (但整体提亮)
+$card-bg: rgba(255, 255, 255, 0.12);
+$glass-border: rgba(127, 231, 214, 0.35);
+$text-light: #f5fffd;
+$text-muted: rgba(245, 255, 253, 0.75);
+$shadow: 0 12px 28px rgba(0, 0, 0, 0.1),
+  0 0 0 1px rgba(127, 231, 214, 0.1) inset;
 
-.megumi-message-board {
-  position: relative;
+.jinxi-message-board {
   min-height: 100vh;
-  padding-top: 110px;
-  display: flex;
-  flex-direction: column;
-  /* 今汐：深海 -> 珍珠薄雾 */
-  background: linear-gradient(180deg, $bg-start 0%, $bg-end 100%);
+  background: linear-gradient(145deg, #08343c 0%, #0a424b 100%);
+  color: $text-light;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto,
+    "PingFang SC", sans-serif;
+  position: relative;
+  overflow-x: hidden;
+  padding: 80px 24px 120px;
 
-  font-family: "Noto Sans SC", "Noto Sans", system-ui, -apple-system, "Segoe UI",
-    Roboto, Arial;
-  color: $text-main;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  .carousel {
-    position: absolute;
+  // 动态背景 (更亮)
+  .dynamic-bg {
+    position: fixed;
     inset: 0;
     z-index: 0;
     pointer-events: none;
+    overflow: hidden;
 
-    &::before {
-      content: "";
+    .bg-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.25;
+      animation: floatGlow 20s infinite alternate;
+      &.bg-glow-1 {
+        width: 600px;
+        height: 600px;
+        background: radial-gradient(circle, $accent, transparent);
+        top: -20%;
+        left: -15%;
+        animation-duration: 22s;
+      }
+      &.bg-glow-2 {
+        width: 700px;
+        height: 700px;
+        background: radial-gradient(circle, $accent-2, transparent);
+        bottom: -25%;
+        right: -10%;
+        animation-duration: 26s;
+        animation-delay: -6s;
+      }
+      &.bg-glow-3 {
+        width: 500px;
+        height: 500px;
+        background: radial-gradient(circle, $gold, transparent);
+        top: 40%;
+        left: 30%;
+        animation-duration: 28s;
+        animation-delay: -10s;
+      }
+    }
+    .particle-field {
       position: absolute;
       inset: 0;
-      background: linear-gradient(
-        180deg,
-        rgba(2, 12, 14, 0.12),
-        rgba(4, 18, 20, 0.24)
-      );
-      pointer-events: none;
-      z-index: 1;
-      mix-blend-mode: soft-light;
-    }
-
-    .carousel-image {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 1s ease, transform 10s linear;
-      filter: blur(0.6px) saturate(0.88) contrast(0.98);
-      transform: scale(1.05);
-
-      &.active {
-        opacity: 1;
-        transform: scale(1);
+      .particle {
+        position: absolute;
+        background: rgba($accent-2, 0.6);
+        border-radius: 50%;
+        filter: blur(2px);
+        animation: floatParticle linear infinite;
       }
     }
+    .wave-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(
+        180deg,
+        transparent,
+        rgba(127, 231, 214, 0.05)
+      );
+      pointer-events: none;
+    }
   }
 
-  .carousel2 {
-    display: none;
+  .board-container {
+    position: relative;
+    z-index: 2;
+    max-width: 1000px;
+    margin: 0 auto;
   }
 
-  /* ---------- 顶部标题（今汐：薄雾玻璃 + 珍珠光） ---------- */
+  // 页眉
   .board-header {
-    position: absolute;
-    top: 72px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: calc(100% - 32px);
-    max-width: 960px;
-
-    padding: 14px 18px;
-    border-radius: 14px;
-    box-shadow: 0 12px 36px rgba(3, 10, 10, 0.6), inset 0 1px 0 $inner-glow;
-    backdrop-filter: blur(6px) saturate(1.02);
-    z-index: 6;
-    border: 1px solid rgba(127, 231, 214, 0.03);
-    background: linear-gradient(
-      180deg,
-      rgba(10, 24, 22, 0.14),
-      rgba(6, 18, 16, 0.16)
-    );
-
-    .title-wrap {
+    text-align: center;
+    margin-bottom: 40px;
+    .title-section {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      align-items: baseline;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
 
       h1 {
-        margin: 0;
-        font-size: 18px;
-        color: $accent-2;
-        letter-spacing: 0.4px;
-        font-weight: 900;
-        text-shadow: 0 2px 12px rgba(10, 80, 74, 0.06);
-      }
-
-      .title-count {
-        color: rgba($text-main, 0.92);
-        font-size: 12px;
+        font-size: 2.2rem;
         font-weight: 700;
-        margin-left: 6px;
-      }
-
-      .subtitle {
         margin: 0;
-        margin-left: auto;
-        color: rgba($text-main, 0.94);
-        font-size: 13px;
-        font-weight: 600;
-        text-shadow: 0 1px 6px rgba(127, 231, 214, 0.02);
+        background: linear-gradient(135deg, $white, $accent-2, $accent);
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0 0 15px rgba($accent, 0.3);
+      }
+      .total-count {
+        font-size: 0.9rem;
+        background: rgba($accent, 0.2);
+        backdrop-filter: blur(4px);
+        padding: 4px 12px;
+        border-radius: 40px;
+        border: 1px solid rgba($accent, 0.4);
       }
     }
-
-    /* 角落的珍珠光斑装饰（低饱和） */
-    &::before {
-      content: "";
-      position: absolute;
-      right: 12px;
-      top: 8px;
-      width: 84px;
-      height: 48px;
-      background: radial-gradient(
-          34px 16px at 20% 40%,
-          rgba(127, 231, 214, 0.1),
-          transparent 30%
-        ),
-        radial-gradient(
-          40px 20px at 60% 60%,
-          rgba(223, 253, 249, 0.06),
-          transparent 30%
-        );
-      filter: blur(6px);
-      pointer-events: none;
-      z-index: -1;
+    .subtitle {
+      margin-top: 12px;
+      font-size: 1rem;
+      color: $accent-2;
+      letter-spacing: 2px;
+      font-weight: 300;
     }
   }
 
-  /* ---------- 留言列表 ---------- */
+  // 留言列表
   .message-list {
-    z-index: 2;
-    position: relative;
-    flex: 1;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(8px);
+    border-radius: 32px;
+    border: 1px solid rgba($accent, 0.3);
+    padding: 20px;
+    max-height: 58vh;
     overflow-y: auto;
-    padding: 28px 20px 340px;
-    margin-top: 18px;
+    scroll-behavior: smooth;
+    margin-bottom: 28px;
+
+    &::-webkit-scrollbar {
+      width: 5px;
+    }
+    &::-webkit-scrollbar-track {
+      background: rgba($accent, 0.1);
+      border-radius: 10px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba($accent, 0.5);
+      border-radius: 10px;
+    }
 
     .message-list-inner {
-      max-width: 960px;
-      max-height: 80vh;
-      margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      position: relative;
-      z-index: 2;
-      overflow-y: auto;
-    }
-
-    .skeleton-wrap {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-
-      .skeleton {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        padding: 12px;
-        background: linear-gradient(
-          180deg,
-          rgba(6, 28, 28, 0.28),
-          rgba(8, 30, 30, 0.22)
-        );
-        border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(2, 12, 14, 0.5);
-        border: 1px solid rgba(127, 231, 214, 0.02);
-      }
-
-      .sk-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 10px;
-        background: linear-gradient(90deg, $accent-1, $accent-2);
-      }
-
-      .sk-lines {
-        flex: 1;
-
-        .sk-line {
-          height: 10px;
-          border-radius: 6px;
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(200, 255, 245, 0.03)
-          );
-          margin-bottom: 8px;
-        }
-
-        .sk-line.short {
-          width: 40%;
-        }
-      }
-    }
-  }
-
-  /* ---------- 单条消息卡片（今汐风） ---------- */
-  .message-card {
-    background: linear-gradient(
-      180deg,
-      rgba(6, 18, 16, 0.38),
-      rgba(8, 20, 18, 0.42)
-    );
-    border-radius: 14px;
-    padding: 14px 16px;
-    margin: 6px auto;
-    width: calc(100% - 48px);
-    max-width: 960px;
-
-    border: 1px solid $card-border;
-    transition: transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1), box-shadow 0.32s,
-      border-color 0.32s;
-    transform-origin: center;
-    position: relative;
-    z-index: 3;
-    overflow: visible;
-    box-shadow: 0 12px 36px $soft-shadow, inset 0 1px 0 $inner-glow;
-
-    &::before {
-      content: "";
-      position: absolute;
-      right: 10px;
-      top: 8px;
-      width: 44px;
-      height: 44px;
-      background: radial-gradient(
-          circle at 30% 30%,
-          rgba(127, 231, 214, 0.08),
-          transparent 30%
-        ),
-        radial-gradient(
-          circle at 70% 70%,
-          rgba(223, 253, 249, 0.04),
-          transparent 30%
-        );
-      filter: blur(4px);
-      pointer-events: none;
-      border-radius: 8px;
-      z-index: 2;
-    }
-
-    &:hover {
-      transform: translateY(-8px) scale(1.01);
-      box-shadow: 0 28px 84px rgba(2, 10, 10, 0.6);
-      border-color: rgba(127, 231, 214, 0.1);
-      background: linear-gradient(
-        180deg,
-        rgba(8, 22, 20, 0.52),
-        rgba(6, 18, 16, 0.58)
-      );
-    }
-
-    .message-meta {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      margin-bottom: 8px;
-
-      .left-meta {
-        display: flex;
-        gap: 12px;
-        align-items: center;
-
-        .name-avatar {
-          width: 48px;
-          height: 48px;
-          border-radius: 10px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 900;
-          color: #042826;
-          background: linear-gradient(180deg, $accent-2 0%, $accent-1 60%);
-          border: 2px solid rgba(127, 231, 214, 0.04);
-          box-shadow: inset 0 -6px 18px rgba(10, 40, 36, 0.06);
-          font-size: 16px;
-          flex-shrink: 0;
-        }
-
-        .meta-texts {
-          .message-name {
-            font-size: 15px;
-            color: $accent-2;
-            font-weight: 800;
-            line-height: 1;
-            text-shadow: 0 3px 8px rgba(6, 40, 36, 0.06);
-          }
-
-          .message-time {
-            font-size: 12px;
-            color: rgba($text-main, 0.78);
-            margin-top: 2px;
-          }
-        }
-      }
-
-      /* 右侧：徽章（今汐风替代焰棋） */
-      .shouan-icon {
-        display: inline-grid;
-        place-items: center;
-        width: 52px;
-        height: 52px;
-        border-radius: 12px;
-        cursor: pointer;
-        user-select: none;
-        position: relative;
-        z-index: 4;
-
-        background: linear-gradient(
-          180deg,
-          rgba(4, 10, 10, 0.88),
-          rgba(6, 12, 12, 0.94)
-        );
-        border: 1px solid $card-border;
-        box-shadow: 0 8px 30px rgba(3, 10, 10, 0.48), inset 0 1px 0 $inner-glow;
-        transition: transform 260ms cubic-bezier(0.2, 0.9, 0.3, 1),
-          box-shadow 260ms, background 260ms;
-        -webkit-tap-highlight-color: transparent;
-        will-change: transform, box-shadow, opacity;
-
-        svg {
-          width: 36px;
-          height: 36px;
-          display: block;
-          overflow: visible;
-        }
-
-        /* 内部图形（调整为今汐色） */
-        .ember-core path {
-          fill: $accent-2;
-          opacity: 0.12;
-          transition: fill 260ms, opacity 260ms, transform 260ms, filter 260ms;
-          filter: drop-shadow(0 8px 20px rgba(127, 231, 214, 0.04));
-        }
-
-        .ember-sparks circle {
-          fill: $accent-1;
-          opacity: 0;
-          transition: opacity 240ms, transform 360ms;
-        }
-
-        &:hover,
-        &:focus {
-          transform: translateY(-6px) scale(1.04);
-          box-shadow: 0 28px 86px rgba(2, 10, 10, 0.6),
-            inset 0 1px 0 $inner-glow;
-          background: linear-gradient(
-            180deg,
-            rgba(8, 18, 16, 0.98),
-            rgba(6, 14, 12, 0.99)
-          );
-
-          .ember-core path {
-            opacity: 1;
-            transform: scale(1.03);
-            fill: $accent-2;
-            filter: drop-shadow(0 18px 46px rgba(127, 231, 214, 0.08));
-          }
-
-          .ember-sparks circle {
-            opacity: 1;
-
-            &:nth-child(1) {
-              transform: translate(-4px, -6px) scale(1.4);
-            }
-
-            &:nth-child(2) {
-              transform: translate(6px, -4px) scale(1.2);
-            }
-
-            &:nth-child(3) {
-              transform: translate(4px, 6px) scale(1.1);
-            }
-
-            &:nth-child(4) {
-              transform: translate(-6px, 4px) scale(1.15);
-            }
-          }
-        }
-
-        &:active {
-          transform: translateY(-2px) scale(0.99);
-        }
-
-        &:focus {
-          outline: none;
-          box-shadow: 0 28px 86px rgba(2, 10, 10, 0.6),
-            0 0 0 6px rgba(127, 231, 214, 0.06);
-        }
-
-        &.active {
-          .ember-core path {
-            opacity: 1;
-            animation: corePulse 2000ms ease-in-out infinite;
-          }
-        }
-
-        /* 动画：浮动 / 核心呼吸 / 星尘上浮 */
-        animation: iconFloat 8s ease-in-out infinite;
-
-        .ember-core path {
-          animation: coreBreathe 4.6s ease-in-out infinite;
-          transform-origin: 50% 50%;
-        }
-        .ember-sparks circle {
-          animation: sparkFloat 1800ms ease-in-out infinite;
-        }
-
-        @media (max-width: 480px) {
-          width: 44px;
-          height: 44px;
-
-          svg {
-            width: 30px;
-            height: 30px;
-          }
-        }
-      } /* .shouan-icon end */
-
-      /* ============ keyframes（今汐风命名） ============ */
-      @keyframes iconFloat {
-        0% {
-          transform: translateY(0) scale(1);
-        }
-        40% {
-          transform: translateY(-6px) scale(1.015);
-        }
-        70% {
-          transform: translateY(-3px) scale(1.008);
-        }
-        100% {
-          transform: translateY(0) scale(1);
-        }
-      }
-
-      @keyframes coreBreathe {
-        0% {
-          transform: scale(1);
-          opacity: 0.9;
-          filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
-        }
-        50% {
-          transform: scale(1.04);
-          opacity: 1;
-          filter: drop-shadow(0 18px 46px rgba(127, 231, 214, 0.08));
-        }
-        100% {
-          transform: scale(1);
-          opacity: 0.9;
-          filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
-        }
-      }
-
-      @keyframes sparkFloat {
-        0% {
-          opacity: 0;
-          transform: translateY(0) scale(0.8);
-          filter: blur(0);
-        }
-        35% {
-          opacity: 1;
-          transform: translateY(-6px) scale(1.15);
-          filter: blur(0.2px);
-        }
-        70% {
-          opacity: 0.6;
-          transform: translateY(-10px) scale(1.25);
-          filter: blur(0.8px);
-        }
-        100% {
-          opacity: 0;
-          transform: translateY(-14px) scale(1.35);
-          filter: blur(1.6px);
-        }
-      }
-
-      @keyframes corePulse {
-        0% {
-          transform: scale(1);
-          filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
-        }
-        50% {
-          transform: scale(1.06);
-          filter: drop-shadow(0 18px 46px rgba(127, 231, 214, 0.08));
-        }
-        100% {
-          transform: scale(1);
-          filter: drop-shadow(0 6px 18px rgba(127, 231, 214, 0.04));
-        }
-      }
-    } /* .message-meta end */
-
-    .message-content {
-      font-size: 15px;
-      color: rgba($text-main, 0.96);
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-break: break-word;
-      margin: 0;
-      padding-bottom: 2px;
-      letter-spacing: 0.2px;
-    }
-  } /* .message-card end */
-
-  /* ---------- 固定底部输入区（今汐样式） ---------- */
-  .message-form {
-    position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 18px;
-    width: calc(100% - 32px);
-    max-width: 960px;
-
-    background: linear-gradient(
-      180deg,
-      rgba(8, 20, 18, 0.9),
-      rgba(6, 16, 14, 0.94)
-    );
-    padding: 14px;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    box-shadow: 0 22px 64px rgba(3, 10, 10, 0.78), inset 0 1px 0 $inner-glow;
-    z-index: 6;
-    border: 1px solid rgba(127, 231, 214, 0.02);
-    will-change: transform, opacity;
-
-    input,
-    textarea {
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(127, 231, 214, 0.03);
-      font-size: 14px;
-      outline: none;
-      transition: box-shadow 0.18s, border-color 0.18s, background 0.18s,
-        transform 0.12s;
-      background: linear-gradient(
-        180deg,
-        rgba(10, 18, 16, 0.6),
-        rgba(6, 14, 12, 0.64)
-      );
-      box-shadow: inset 0 -4px 10px rgba(0, 0, 0, 0.36);
-      color: $text-main;
-      resize: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-    }
-
-    input::placeholder,
-    textarea::placeholder {
-      color: rgba($text-main, 0.46);
-    }
-
-    input:focus,
-    textarea:focus {
-      border-color: $accent-1;
-      box-shadow: 0 10px 30px rgba(127, 231, 214, 0.06),
-        inset 0 -6px 12px rgba(0, 0, 0, 0.32);
-      background: linear-gradient(
-        180deg,
-        rgba(12, 22, 20, 0.74),
-        rgba(8, 18, 16, 0.72)
-      );
-      transform: translateY(-1px);
-    }
-
-    textarea {
-      min-height: 64px;
-      max-height: 220px;
-      line-height: 1.6;
-    }
-
-    .form-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-
-      .hint {
-        color: rgba($text-main, 0.86);
-        font-size: 13px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        kbd {
-          background: rgba(6, 14, 12, 0.78);
-          border-radius: 6px;
-          padding: 3px 7px;
-          border: 1px solid rgba(127, 231, 214, 0.02);
-          font-size: 12px;
-          box-shadow: inset 0 -2px 6px rgba(0, 0, 0, 0.28);
-          color: $accent-2;
-          font-weight: 700;
-          letter-spacing: 0.6px;
-        }
-      }
-
-      /* 提交按钮：珍珠渐变 + 低调呼吸 */
-      button {
-        padding: 10px 18px;
-        background: linear-gradient(180deg, $accent-1 0%, $accent-2 60%);
-        color: #042826; /* 深色文字以保证对比 */
-        border: none;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 800;
-        box-shadow: 0 12px 36px rgba(127, 231, 214, 0.06),
-          inset 0 1px 0 rgba(255, 255, 255, 0.02);
-        transition: transform 0.14s ease, box-shadow 0.14s ease,
-          opacity 0.14s ease;
-        will-change: transform, box-shadow;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-
-        &::after {
-          content: "";
-          display: inline-block;
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: radial-gradient(
-            circle at 40% 40%,
-            $accent-2 0%,
-            $accent-1 40%,
-            transparent 60%
-          );
-          box-shadow: 0 6px 18px rgba(127, 231, 214, 0.06);
-        }
-
-        &:hover {
-          transform: translateY(-3px) scale(1.02);
-          box-shadow: 0 20px 56px rgba(127, 231, 214, 0.08);
-        }
-
-        &:active {
-          transform: translateY(-1px) scale(0.995);
-        }
-      }
-
-      button:disabled {
-        opacity: 0.52;
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-        background: linear-gradient(
-          180deg,
-          rgba(10, 14, 12, 0.6),
-          rgba(8, 12, 10, 0.6)
-        );
-        color: rgba(220, 240, 235, 0.6);
-      }
-    }
-
-    &.pulse {
-      animation: formPulse 1200ms ease-in-out 1;
-    }
-  }
-
-  @keyframes formPulse {
-    0% {
-      transform: translateX(-50%) scale(1);
-      box-shadow: 0 22px 64px rgba(3, 10, 10, 0.78);
-    }
-    40% {
-      transform: translateX(-50%) scale(1.01);
-      box-shadow: 0 28px 84px rgba(127, 231, 214, 0.08);
-    }
-    100% {
-      transform: translateX(-50%) scale(1);
-      box-shadow: 0 22px 64px rgba(3, 10, 10, 0.78);
-    }
-  }
-
-  /* ---------- 响应式：移动端收敛 ---------- */
-  @media (max-width: 980px) {
-    padding-top: 90px;
-
-    .carousel1 {
-      display: none;
-    }
-    .carousel2 {
-      display: block;
-    }
-
-    .board-header {
-      left: 12px;
-      transform: none;
-      width: calc(100% - 24px);
-    }
-
-    .message-list {
-      padding: 18px 12px 260px;
-
-      .message-list-inner {
-        gap: 12px;
-      }
+      gap: 18px;
     }
 
     .message-card {
-      width: calc(100% - 28px);
-      border-radius: 12px;
-      padding: 12px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 20px;
+      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      border: 1px solid rgba($accent, 0.2);
+      overflow: hidden;
+      backdrop-filter: blur(2px);
 
-      .name-avatar {
-        width: 44px;
-        height: 44px;
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+          circle at 0% 0%,
+          rgba($accent, 0.08),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.4s;
+        pointer-events: none;
       }
-    }
+      &:hover {
+        transform: translateY(-6px);
+        border-color: rgba($accent, 0.6);
+        background: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 16px 28px rgba(0, 0, 0, 0.2);
+        &::before {
+          opacity: 1;
+        }
+      }
 
-    .message-form {
-      left: 12px;
-      transform: none;
-      width: calc(100% - 24px);
-      bottom: 12px;
-      padding: 12px;
+      .card-glow {
+        position: absolute;
+        top: -50%;
+        left: -20%;
+        width: 140%;
+        height: 140%;
+        background: radial-gradient(circle, rgba($accent, 0.05), transparent);
+        pointer-events: none;
+        transition: opacity 0.3s;
+        opacity: 0;
+      }
+      &:hover .card-glow {
+        opacity: 1;
+      }
+
+      .card-meta {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+        .avatar {
+          width: 48px;
+          height: 48px;
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 1.2rem;
+          background: linear-gradient(135deg, $accent, $accent-2);
+          color: $dark-bg;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .info {
+          flex: 1;
+          .name {
+            font-weight: 700;
+            color: $accent-2;
+            font-size: 1rem;
+          }
+          .time {
+            font-size: 0.7rem;
+            color: $text-muted;
+            margin-top: 4px;
+          }
+        }
+        .badge {
+          .tide-icon {
+            width: 28px;
+            height: 28px;
+            stroke: $accent-2;
+            fill: none;
+            filter: drop-shadow(0 0 6px $accent);
+            transition: all 0.3s;
+          }
+          &:hover .tide-icon {
+            transform: scale(1.1) rotate(5deg);
+            stroke: $accent;
+          }
+        }
+      }
+      .content {
+        font-size: 0.95rem;
+        line-height: 1.6;
+        color: $text-light;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .card-deco {
+        position: absolute;
+        bottom: 8px;
+        right: 8px;
+        width: 40px;
+        height: 40px;
+        background: radial-gradient(circle, rgba($accent, 0.1), transparent);
+        border-radius: 50%;
+        pointer-events: none;
+      }
     }
   }
 
-  /* sr-only（无障碍隐藏） */
-  .sr-only {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    padding: 0 !important;
-    margin: -1px !important;
-    overflow: hidden !important;
-    clip: rect(0, 0, 0, 0) !important;
-    white-space: nowrap !important;
-    border: 0 !important;
+  .sentinel {
+    height: 4px;
+    margin-top: 8px;
+  }
+  .loading-tip,
+  .end-tip {
+    text-align: center;
+    padding: 24px;
+    color: $text-muted;
+    font-size: 0.9rem;
+  }
+  .loading-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba($accent, 0.3);
+    border-top-color: $accent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  // 底部表单
+  .message-form {
+    background: rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    border-radius: 32px;
+    border: 1px solid rgba($accent, 0.3);
+    padding: 24px;
+    transition: all 0.3s;
+    &:hover {
+      border-color: rgba($accent, 0.5);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+    .form-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      .name-input {
+        flex: 0 0 150px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba($accent, 0.3);
+        border-radius: 40px;
+        padding: 12px 18px;
+        color: $white;
+        font-size: 0.9rem;
+        outline: none;
+        transition: all 0.2s;
+        &:focus {
+          border-color: $accent;
+          box-shadow: 0 0 12px rgba($accent, 0.3);
+        }
+      }
+      .textarea-wrap {
+        flex: 1;
+        position: relative;
+        textarea {
+          width: 100%;
+          background: rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba($accent, 0.3);
+          border-radius: 24px;
+          padding: 12px 18px;
+          color: $white;
+          font-size: 0.9rem;
+          resize: none;
+          min-height: 80px;
+          font-family: inherit;
+          outline: none;
+          transition: all 0.2s;
+          &:focus {
+            border-color: $accent;
+            box-shadow: 0 0 12px rgba($accent, 0.3);
+          }
+        }
+        .textarea-glow {
+          position: absolute;
+          bottom: -2px;
+          left: 5%;
+          width: 90%;
+          height: 4px;
+          background: linear-gradient(
+            90deg,
+            transparent,
+            $accent,
+            $accent-2,
+            transparent
+          );
+          filter: blur(3px);
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        textarea:focus + .textarea-glow {
+          opacity: 1;
+        }
+      }
+    }
+    .form-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      .hint {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.8rem;
+        color: $text-muted;
+        .hint-icon {
+          font-size: 1rem;
+          animation: pulseSmall 2s infinite;
+        }
+      }
+      button {
+        background: linear-gradient(90deg, $accent, $accent-2);
+        border: none;
+        border-radius: 40px;
+        padding: 10px 28px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: #08343c;
+        cursor: pointer;
+        transition: all 0.25s;
+        &:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 20px rgba($accent, 0.4);
+        }
+        &:disabled {
+          opacity: 0.5;
+          animation: cursorAnimation_disabled 1s infinite step-start;
+        }
+      }
+    }
+  }
+
+  // 动画
+  @keyframes floatGlow {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.15;
+    }
+    100% {
+      transform: translate(30px, 20px) scale(1.2);
+      opacity: 0.3;
+    }
+  }
+  @keyframes floatParticle {
+    0% {
+      transform: translateY(0) translateX(0);
+      opacity: 0;
+    }
+    20% {
+      opacity: 0.6;
+    }
+    80% {
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(-100px) translateX(50px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes pulseSmall {
+    0%,
+    100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+  .msg-enter-active,
+  .msg-leave-active {
+    transition: all 0.3s ease;
+  }
+  .msg-enter-from {
+    opacity: 0;
+    transform: translateY(-15px);
+  }
+  .msg-leave-to {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+
+  @media (max-width: 700px) {
+    padding: 70px 16px 100px;
+    .board-header .title-section h1 {
+      font-size: 1.8rem;
+    }
+    .message-list {
+      padding: 16px;
+    }
+    .message-form .form-row {
+      flex-direction: column;
+      .name-input {
+        flex: auto;
+        width: 100%;
+      }
+    }
   }
 }
 </style>
